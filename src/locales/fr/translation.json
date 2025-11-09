@@ -1,0 +1,17 @@
+{
+    "welcome": "Bienvenue dans notre application !",
+    "edit_template": "Modifier le modèle",
+    "fields": "Champs",
+    "add_field": "Ajouter un champ",
+    "update_template": "Mettre à jour le modèle",
+    "clear": "Effacer",
+    "required": "Obligatoire",
+    "description": "Description",
+    "field_name": "Nom du champ",
+    "field_type": "Type de champ",
+    "options": "Options",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce champ ?"
+  }
+  
