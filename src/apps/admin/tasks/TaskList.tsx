@@ -54,7 +54,9 @@ const TaskList: React.FC = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get<Task[]>("http://localhost:8080/tasks");
+        const response = await axios.get<Task[]>(
+          `${import.meta.env.VITE_API_BASE}/api/tasks`
+        );
         setTasks(response.data);
         setFilteredTasks(response.data); // Initialize filteredTasks with fetched tasks
       } catch (err) {
@@ -99,7 +101,7 @@ const TaskList: React.FC = () => {
 
   const handleDeleteClick = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:8080/tasks/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_BASE}/api/tasks/${id}`);
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
       setSnackbarMessage("Task deleted successfully");
       setSnackbarSeverity("success");

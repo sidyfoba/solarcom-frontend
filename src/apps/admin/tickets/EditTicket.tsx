@@ -199,7 +199,9 @@ const EditTicket: React.FC = () => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/process/ticket/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/ticket/template/all`
         );
         setTemplates(response.data.templates);
       } catch (err) {
@@ -217,7 +219,7 @@ const EditTicket: React.FC = () => {
       setFieldsLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/process/tickets/${id}`
+          `${import.meta.env.VITE_API_BASE}/api/process/tickets/${id}`
         );
         const ticket = response.data;
         // console.log(response.data);
@@ -244,7 +246,9 @@ const EditTicket: React.FC = () => {
       try {
         const id = ticket?.updateMessagesId;
         const response = await axios.get(
-          `http://localhost:8080/api/process/update/messages/${id}/updates`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/process/update/messages/${id}/updates`
         );
         const updateMessages = response.data;
         console.log(response.data);
@@ -268,7 +272,9 @@ const EditTicket: React.FC = () => {
       try {
         const id = ticket?.assignmentListId;
         const response = await axios.get(
-          `http://localhost:8080/api/process/assignments-list/${id}/assignments`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/process/assignments-list/${id}/assignments`
         );
         const assignmentsList = response.data;
         console.log(response.data);
@@ -492,7 +498,7 @@ const EditTicket: React.FC = () => {
 
       // id comes form  const { id } = useParams();
       await axios.put(
-        `http://localhost:8080/api/process/tickets/update/${id}`,
+        `${import.meta.env.VITE_API_BASE}/api/process/tickets/update/${id}`,
         requestData
       );
       setSnackbarMessage("Ticket submitted successfully.");

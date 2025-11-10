@@ -26,7 +26,7 @@ const EmployeesList: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get<Employee[]>(
-          "http://localhost:8080/api/hr/employee/all"
+          `${import.meta.env.VITE_API_BASE}/api/hr/employee/all`
         );
         setEmployees(response.data);
       } catch (error) {
@@ -46,7 +46,9 @@ const EmployeesList: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:8080/api/hr/employee/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE}/api/hr/employee/${id}`
+      );
       setEmployees((prev) => prev.filter((emp) => emp.id !== id));
     } catch (error) {
       console.error("Error deleting employee:", error);

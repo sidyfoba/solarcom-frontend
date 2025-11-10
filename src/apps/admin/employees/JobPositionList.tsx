@@ -66,7 +66,7 @@ const JobPositionList: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/hr/job-positions"
+        `${import.meta.env.VITE_API_BASE}/api/hr/job-positions`
       );
       setJobPositions(response.data);
       setFilteredJobPositions(response.data); // Initialize filtered positions
@@ -101,12 +101,14 @@ const JobPositionList: React.FC = () => {
 
       if (currentJobPosition.id) {
         await axios.put(
-          `http://localhost:8080/api/hr/job-positions/${currentJobPosition.id}`,
+          `${import.meta.env.VITE_API_BASE}/api/hr/job-positions/${
+            currentJobPosition.id
+          }`,
           currentJobPosition
         );
       } else {
         await axios.post(
-          "http://localhost:8080/api/hr/job-positions",
+          `${import.meta.env.VITE_API_BASE}/api/hr/job-positions`,
           currentJobPosition
         );
       }
@@ -128,7 +130,9 @@ const JobPositionList: React.FC = () => {
   const handleDelete = async (id: number) => {
     setLoading(true);
     try {
-      await axios.delete(`http://localhost:8080/api/hr/job-positions/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE}/api/hr/job-positions/${id}`
+      );
       fetchJobPositions();
       setSnackbarMessage("Job position deleted successfully");
       setSnackbarSeverity("success");

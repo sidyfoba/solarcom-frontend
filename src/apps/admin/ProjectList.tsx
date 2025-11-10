@@ -21,7 +21,9 @@ const ProjectList = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/projects/all");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE}/api/projects/all`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch projects.");
         }

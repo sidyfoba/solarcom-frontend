@@ -41,7 +41,7 @@ const ProjectEdit = () => {
       try {
         console.log(id);
         const response = await fetch(
-          `http://localhost:8080/api/projects/${id}`
+          `${import.meta.env.VITE_API_BASE}/api/projects/${id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch project.");
@@ -91,7 +91,7 @@ const ProjectEdit = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/projects/update/${id}`,
+        `${import.meta.env.VITE_API_BASE}/api/projects/update/${id}`,
         {
           method: "PUT",
           headers: {

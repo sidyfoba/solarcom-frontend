@@ -78,7 +78,7 @@ const AddUser = () => {
     };
 
     axios
-      .post("http://localhost:8080/users/add", userData)
+      .post(`${import.meta.env.VITE_API_BASE}/api/users/add`, userData)
       .then((response) => {
         setSuccessMessage("User added successfully!");
         setLogin("");

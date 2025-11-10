@@ -28,7 +28,9 @@ const TicketTemplatesList = () => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/process/ticket/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/ticket/template/all`
         );
         setTemplates(response.data.templates);
         console.log(response.data);
@@ -50,7 +52,9 @@ const TicketTemplatesList = () => {
     if (window.confirm("Are you sure you want to delete this template?")) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/admin/process/touble-ticket/template/delete/${templateId}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/touble-ticket/template/delete/${templateId}`
         );
         const temps = templates.filter(
           (template) => template.id !== templateId

@@ -214,7 +214,9 @@ const ElementEditTemplate = () => {
     const fetchTemplate = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/admin/infrastructure/element/template/${id}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/infrastructure/element/template/${id}`
         );
         console.log("response in edit element template");
         console.log(response.data);
@@ -316,7 +318,9 @@ const ElementEditTemplate = () => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/infrastructure/element/template/update/${id}`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/infrastructure/element/template/update/${id}`,
         {
           templateName,
           fields,

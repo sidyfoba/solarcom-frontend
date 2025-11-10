@@ -66,7 +66,9 @@ const SiteEditTemplate = () => {
     const fetchTemplate = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/admin/infrastructure/site/template/${id}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/infrastructure/site/template/${id}`
         );
         const { templateName, fields, description, active } = response.data;
         setTemplateName(templateName);
@@ -163,7 +165,9 @@ const SiteEditTemplate = () => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/infrastructure/site/template/update/${id}`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/infrastructure/site/template/update/${id}`,
         {
           templateName,
           fields,

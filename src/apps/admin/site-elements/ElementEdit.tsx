@@ -195,7 +195,7 @@ const ElementEdit = () => {
     const fetchElement = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/infrastructure/element/${id}`
+          `${import.meta.env.VITE_API_BASE}/api/infrastructure/element/${id}`
         );
         console.log("element information");
         console.log(response.data);
@@ -236,7 +236,9 @@ const ElementEdit = () => {
         setFieldsLoading(true); // Set fieldsLoading to true when starting the fetch
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/admin/infrastructure/element/template/${templateId}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/admin/infrastructure/element/template/${templateId}`
           );
           setTemplateFields(response.data.fields);
         } catch (err) {
@@ -263,7 +265,9 @@ const ElementEdit = () => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:8080/api/infrastructure/element/update-from-template`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/infrastructure/element/update-from-template`,
         {
           id: element.id,
           elementName: elementName,

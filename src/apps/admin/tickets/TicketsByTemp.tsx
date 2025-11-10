@@ -48,7 +48,9 @@ const TicketsByTemp = () => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/process/ticket/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/ticket/template/all`
         );
         setTemplates(response.data.templates);
       } catch (err) {
@@ -67,7 +69,9 @@ const TicketsByTemp = () => {
       setLoading(true); // Start loading
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/admin/process/ticket/template/${selectedTemplate}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/ticket/template/${selectedTemplate}`
         );
         const ticketsData = response.data;
         console.log("list of tickets");
@@ -119,7 +123,9 @@ const TicketsByTemp = () => {
 
         // Fetch tickets for the selected template
         const ticketsResponse = await axios.get(
-          `http://localhost:8080/api/process/tickets/all/${selectedTemplate}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/process/tickets/all/${selectedTemplate}`
         );
         const tickets = ticketsResponse.data;
 
@@ -154,7 +160,9 @@ const TicketsByTemp = () => {
   const confirmDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:8080/api/infrastructure/site/${ticketToDelete}`
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/infrastructure/site/${ticketToDelete}`
       );
       setSnackbarMessage("Ticket deleted successfully.");
       setSnackbarSeverity("success");

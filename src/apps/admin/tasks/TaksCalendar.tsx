@@ -15,7 +15,9 @@ const TaksCalendar = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/tasks");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE}/api/tasks`
+        );
         const tasks = response.data;
 
         // Transform task data to fit calendar format

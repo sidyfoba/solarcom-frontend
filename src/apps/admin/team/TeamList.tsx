@@ -58,7 +58,9 @@ const TeamList: React.FC = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/hr/teams");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE}/api/hr/teams`
+        );
         setTeams(response.data);
         console.log(response.data);
       } catch (error) {
@@ -69,7 +71,7 @@ const TeamList: React.FC = () => {
     const fetchEmployees = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/hr/employee/all"
+          `${import.meta.env.VITE_API_BASE}/api/hr/employee/all`
         );
         setEmployees(response.data);
       } catch (error) {

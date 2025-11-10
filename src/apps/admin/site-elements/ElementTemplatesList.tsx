@@ -181,7 +181,9 @@ const ElementTemplatesList = () => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/infrastructure/element/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/infrastructure/element/template/all`
         );
         setTemplates(response.data);
         console.log(response.data);
@@ -203,7 +205,9 @@ const ElementTemplatesList = () => {
     if (window.confirm("Are you sure you want to delete this template?")) {
       try {
         await axios.delete(
-          `http://localhost:8080/api/admin/infrastructure/element/template/delete/${templateId}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/infrastructure/element/template/delete/${templateId}`
         );
         const temps = templates.filter(
           (template) => template.id !== templateId

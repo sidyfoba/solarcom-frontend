@@ -166,7 +166,7 @@ const TaskCreationForm: React.FC = () => {
           : {}),
       };
 
-      await axios.post("http://localhost:8080/tasks", payload);
+      await axios.post(`${import.meta.env.VITE_API_BASE}/api/tasks`, payload);
       setSnackbarMessage("Task created successfully!");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);

@@ -41,7 +41,7 @@ export default function Accounts({ roles }: Props) {
       try {
         // const token = sessionStorage.getItem("jwt");
         const response = await axios.get<User[]>(
-          "http://localhost:8080/users"
+          `${import.meta.env.VITE_API_BASE}/api/users`
           // {
           //   headers: { Authorization: token },
           // }

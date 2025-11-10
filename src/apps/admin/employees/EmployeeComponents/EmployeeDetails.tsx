@@ -44,7 +44,7 @@ const EmployeeDetails: React.FC<EmployeeDetailsProps> = ({
       if (id) {
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/hr/employee/${id}`
+            `${import.meta.env.VITE_API_BASE}/api/hr/employee/${id}`
           );
           setDetails({
             jobTitle: response.data.jobTitle,
@@ -64,7 +64,7 @@ const EmployeeDetails: React.FC<EmployeeDetailsProps> = ({
     const fetchJobTitles = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/hr/job-positions"
+          `${import.meta.env.VITE_API_BASE}/api/hr/job-positions`
         );
         setJobTitles(response.data); // Assuming response.data is an array of objects { title, description }
       } catch (error) {
@@ -92,7 +92,9 @@ const EmployeeDetails: React.FC<EmployeeDetailsProps> = ({
         newID = id;
       }
       const response = await axios.put(
-        `http://localhost:8080/api/hr/employee/personal-details/${newID}`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/hr/employee/personal-details/${newID}`,
         details
       );
       onSnackbarOpen("Personal details submitted successfully!", "success");

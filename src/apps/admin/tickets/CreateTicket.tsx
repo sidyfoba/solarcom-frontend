@@ -195,7 +195,9 @@ const CreateTicket: React.FC = () => {
       console.log(setAssigns);
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/process/ticket/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/ticket/template/all`
         );
         setTemplates(response.data.templates);
       } catch (err) {
@@ -213,7 +215,9 @@ const CreateTicket: React.FC = () => {
         setFieldsLoading(true);
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/admin/process/ticket/template/${selectedTemplate}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/admin/process/ticket/template/${selectedTemplate}`
           );
           setTemplateFields(response.data.fields);
           // console.log(response.data.fields);
@@ -392,7 +396,9 @@ const CreateTicket: React.FC = () => {
 
     try {
       await axios.post(
-        `http://localhost:8080/api/process/tickets/create-from-template/${selectedTemplate}`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/process/tickets/create-from-template/${selectedTemplate}`,
         { ticket, updateMessages }
       );
       setSnackbarMessage("Ticket submitted successfully.");

@@ -128,7 +128,7 @@ const SiteEdit = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/infrastructure/site/${id}`
+          `${import.meta.env.VITE_API_BASE}/api/infrastructure/site/${id}`
         );
 
         // console.log(response.data);
@@ -161,7 +161,9 @@ const SiteEdit = () => {
         setFieldsLoading(true);
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/admin/infrastructure/site/template/${templateId}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/admin/infrastructure/site/template/${templateId}`
           );
           setTemplateFields(response.data.fields);
         } catch (err) {
@@ -208,7 +210,9 @@ const SiteEdit = () => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:8080/api/infrastructure/site/update-from-template`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/infrastructure/site/update-from-template`,
         {
           id: site.id,
           siteName: siteName,
@@ -239,7 +243,9 @@ const SiteEdit = () => {
   const handleAddElementDialog = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/admin/infrastructure/element/template/all"
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/infrastructure/element/template/all`
       );
       setTemplates(response.data);
       setElementDialogOpen(true);
@@ -253,7 +259,9 @@ const SiteEdit = () => {
       if (selectedTemplate) {
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/admin/infrastructure/element/template/${selectedTemplate}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/admin/infrastructure/element/template/${selectedTemplate}`
           );
           const siteData = response.data;
           const valueColumns = siteData.fields.map((field) => ({
@@ -271,7 +279,9 @@ const SiteEdit = () => {
           ]);
 
           const elementsResponse = await axios.get(
-            `http://localhost:8080/api/infrastructure/element/all/current-id-site-is-null/${selectedTemplate}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/infrastructure/element/all/current-id-site-is-null/${selectedTemplate}`
           );
           const elements = elementsResponse.data;
 
@@ -300,7 +310,9 @@ const SiteEdit = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/infrastructure/element/${selectedElementId}`
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/infrastructure/element/${selectedElementId}`
       );
       // console.log(response.data);
       // Use the function

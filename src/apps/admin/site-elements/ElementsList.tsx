@@ -47,7 +47,9 @@ const ElementsList = () => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/infrastructure/element/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/infrastructure/element/template/all`
         );
         setTemplates(response.data);
       } catch (err) {
@@ -64,7 +66,9 @@ const ElementsList = () => {
       if (selectedTemplate) {
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/admin/infrastructure/element/template/${selectedTemplate}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/admin/infrastructure/element/template/${selectedTemplate}`
           );
           const elementsData = response.data;
           console.log("const siteData = response.data;");
@@ -116,7 +120,9 @@ const ElementsList = () => {
 
           // Fetch sites based on the selected template
           const elementsResponse = await axios.get(
-            `http://localhost:8080/api/infrastructure/element/all/${selectedTemplate}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/infrastructure/element/all/${selectedTemplate}`
           );
           const elements = elementsResponse.data;
           console.log("const elements = sitesResponse.data;");
@@ -171,7 +177,9 @@ const ElementsList = () => {
   const confirmDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:8080/api/infrastructure/element/${elementToDelete}`
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/infrastructure/element/${elementToDelete}`
       );
       setSnackbarMessage("Element deleted successfully.");
       setSnackbarSeverity("success");

@@ -410,7 +410,9 @@ const ElementCreateTemplate: React.FC = () => {
     setLoading(true);
     try {
       await axios.post(
-        "http://localhost:8080/api/admin/infrastructure/element/template/create",
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/infrastructure/element/template/create`,
         {
           templateName,
           fields,

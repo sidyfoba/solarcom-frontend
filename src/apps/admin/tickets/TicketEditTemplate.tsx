@@ -157,7 +157,9 @@ const TicketEditTemplate: React.FC = () => {
     const fetchTemplate = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/admin/process/ticket/template/${id}`
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/process/ticket/template/${id}`
         );
         const { templateName, fields, description, active } = response.data;
         console.log(response.data);
@@ -375,7 +377,9 @@ const TicketEditTemplate: React.FC = () => {
     console.log(fields);
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/process/ticket/template/update/${id}`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/process/ticket/template/update/${id}`,
         {
           templateName,
           fields,

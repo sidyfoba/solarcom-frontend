@@ -86,7 +86,9 @@ const TaskEditForm: React.FC = () => {
   useEffect(() => {
     const fetchTask = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/tasks/${id}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE}/api/tasks/${id}`
+        );
         const task = response.data;
         setFormState({
           title: task.title,
@@ -173,7 +175,10 @@ const TaskEditForm: React.FC = () => {
           : {}),
       };
 
-      await axios.put(`http://localhost:8080/tasks/${id}`, payload);
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE}/api/tasks/${id}`,
+        payload
+      );
       setSnackbarMessage("Task updated successfully!");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);

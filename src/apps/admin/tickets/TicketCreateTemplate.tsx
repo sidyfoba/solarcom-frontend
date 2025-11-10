@@ -340,7 +340,9 @@ const TicketCreateTemplate: React.FC = () => {
     console.log(fields);
     try {
       await axios.post(
-        "http://localhost:8080/api/admin/process/ticket/template/create",
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/process/ticket/template/create`,
         {
           templateName,
           fields,

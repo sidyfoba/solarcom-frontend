@@ -37,7 +37,7 @@ const Tickets: React.FC = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/process/tickets"
+          `${import.meta.env.VITE_API_BASE}/api/process/tickets`
         );
         setTickets(response.data);
       } catch (err) {

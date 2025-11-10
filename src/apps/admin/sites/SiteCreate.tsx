@@ -37,7 +37,9 @@ const SiteCreate = () => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/admin/infrastructure/site/template/all"
+          `${
+            import.meta.env.VITE_API_BASE
+          }/api/admin/infrastructure/site/template/all`
         );
         setTemplates(response.data.datas);
       } catch (err) {
@@ -54,7 +56,9 @@ const SiteCreate = () => {
         setFieldsLoading(true); // Set fieldsLoading to true when starting the fetch
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/admin/infrastructure/site/template/${selectedTemplate}`
+            `${
+              import.meta.env.VITE_API_BASE
+            }/api/admin/infrastructure/site/template/${selectedTemplate}`
           );
           setTemplateFields(response.data.fields);
         } catch (err) {
@@ -81,7 +85,9 @@ const SiteCreate = () => {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:8080/api/infrastructure/site/create-from-template/${selectedTemplate}`,
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/infrastructure/site/create-from-template/${selectedTemplate}`,
         { siteName, values: formData }
       );
       // navigate("/sites"); // Redirect after successful site creation

@@ -60,7 +60,7 @@ const ProjectForm = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/projects/create",
+        `${import.meta.env.VITE_API_BASE}/api/projects/create`,
         {
           method: "POST",
           headers: {
