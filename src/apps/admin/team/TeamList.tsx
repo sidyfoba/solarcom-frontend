@@ -149,7 +149,7 @@ const TeamList: React.FC = () => {
         const id = currentTeam.id;
         console.log("        const id = currentTeam.id = " + id);
         await axios.put(
-          `http://localhost:8080/api/hr/teams/${id}`,
+          `${import.meta.env.VITE_API_BASE}/api/hr/teams/${id}`,
           currentTeam
         );
         setTeams((prev) =>
@@ -165,7 +165,7 @@ const TeamList: React.FC = () => {
           memberIDs: currentTeam.memberIDs,
         };
         const response = await axios.post(
-          "http://localhost:8080/api/hr/teams",
+          `${import.meta.env.VITE_API_BASE}/api/hr/teams`,
           newTeam
         );
         setTeams((prev) => [...prev, { ...response.data }]);
@@ -199,7 +199,9 @@ const TeamList: React.FC = () => {
 
   const handleDeleteTeam = async () => {
     try {
-      await axios.delete(`http://localhost:8080/api/hr/teams/${teamToDelete}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE}/api/hr/teams/${teamToDelete}`
+      );
       setTeams((prev) => prev.filter((team) => team.id !== teamToDelete));
       handleDeleteDialogClose();
       setSnackbarMessage("Team deleted successfully!");
