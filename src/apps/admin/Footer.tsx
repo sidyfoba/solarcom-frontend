@@ -17,7 +17,7 @@ function Copyright() {
     <Typography variant="body2" color="text.secondary">
       © {new Date().getFullYear()}{" "}
       <Link href="#" underline="hover">
-        Les patriotes du Sénégal
+        Solarcom SA
       </Link>
       . All rights reserved.
     </Typography>
