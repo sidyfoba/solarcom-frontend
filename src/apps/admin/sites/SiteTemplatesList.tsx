@@ -11,6 +11,17 @@ import {
   ListItemSecondaryAction,
   IconButton,
   CircularProgress,
+  Container,
+  Stack,
+  Divider,
+  Chip,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import axios from "axios";
@@ -22,6 +33,13 @@ const SiteTemplatesList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [openDialog, setOpenDialog] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,10 +50,13 @@ const SiteTemplatesList = () => {
             import.meta.env.VITE_API_BASE
           }/api/admin/infrastructure/site/template/all`
         );
-        setTemplates(response.data.datas);
+        setTemplates(response.data.datas || []);
         console.log(response.data);
       } catch (err) {
         setError("Failed to load templates");
+        setSnackbarMessage("Failed to load templates");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       } finally {
         setLoading(false);
       }
@@ -48,66 +69,187 @@ const SiteTemplatesList = () => {
     navigate(`/admin/projects/site/template/edit/${templateId}`);
   };
 
-  const handleDelete = async (templateId) => {
-    if (window.confirm("Are you sure you want to delete this template?")) {
-      try {
-        await axios.delete(
-          `${
-            import.meta.env.VITE_API_BASE
-          }/api/admin/infrastructure/site/template/delete/${templateId}`
-        );
-        const temps = templates.filter(
-          (template) => template.id !== templateId
-        );
-        setTemplates(temps);
-      } catch (err) {
-        setError("Failed to delete template");
-      }
+  const handleDeleteClick = (templateId) => {
+    setTemplateToDelete(templateId);
+    setOpenDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(
+        `${
+          import.meta.env.VITE_API_BASE
+        }/api/admin/infrastructure/site/template/delete/${templateToDelete}`
+      );
+      const temps = templates.filter(
+        (template) => template.id !== templateToDelete
+      );
+      setTemplates(temps);
+      setSnackbarMessage("Template deleted successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (err) {
+      setError("Failed to delete template");
+      setSnackbarMessage("Failed to delete template.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setOpenDialog(false);
+      setTemplateToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setOpenDialog(false);
+    setTemplateToDelete(null);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
     <Layout>
-      <Box sx={{ padding: 3, width: "100%" }}>
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Template List
-          </Typography>
-          {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center">
-              <CircularProgress />
-            </Box>
-          ) : error ? (
-            <Typography color="error">{error}</Typography>
-          ) : (
-            <List>
-              {templates.map((template) => (
-                <ListItem key={template.id} divider>
-                  <ListItemText
-                    primary={template.templateName}
-                    secondary={template.description || "No description"}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="edit"
-                      onClick={() => handleEdit(template.id)}
-                    >
-                      <Edit />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleDelete(template.id)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Paper>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="md">
+          {/* Header */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h4" fontWeight={600} gutterBottom>
+              Site Templates
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Browse, edit, and delete site templates used to create sites from
+              predefined structures.
+            </Typography>
+          </Box>
+
+          <Stack spacing={3}>
+            <Paper
+              elevation={4}
+              sx={{
+                p: { xs: 3, md: 4 },
+                borderRadius: 3,
+                backgroundColor: "background.paper",
+              }}
+            >
+              <Divider textAlign="left" sx={{ mb: 3 }}>
+                <Chip
+                  label="Template List"
+                  color="primary"
+                  variant="outlined"
+                />
+              </Divider>
+
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 200,
+                  }}
+                >
+                  <CircularProgress />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    Loading templates...
+                  </Typography>
+                </Box>
+              ) : error ? (
+                <Typography color="error">{error}</Typography>
+              ) : templates.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No templates found. Create a new site template to get started.
+                </Typography>
+              ) : (
+                <List>
+                  {templates.map((template) => (
+                    <ListItem key={template.id} divider alignItems="flex-start">
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1" fontWeight={500}>
+                            {template.templateName}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {template.description || "No description"}
+                          </Typography>
+                        }
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="edit"
+                          onClick={() => handleEdit(template.id)}
+                          sx={{ mr: 1 }}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleDeleteClick(template.id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </Paper>
+
+            {/* Snackbar */}
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
+              onClose={handleSnackbarClose}
+            >
+              <Alert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessage}
+              </Alert>
+            </Snackbar>
+          </Stack>
+        </Container>
+
+        {/* Delete confirmation dialog */}
+        <Dialog open={openDialog} onClose={cancelDelete}>
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this template?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelDelete}>Cancel</Button>
+            <Button onClick={confirmDelete} color="primary">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Layout>
   );

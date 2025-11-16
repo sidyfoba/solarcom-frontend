@@ -1,101 +1,86 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
-import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
+import {
+  Box,
+  Container,
+  Typography,
+  Link,
+  Stack,
+  IconButton,
+} from "@mui/material";
 
-import FacebookIcon from "@mui/icons-material/GitHub";
+import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import TwitterIcon from "@mui/icons-material/X";
-
-const logoStyle = {
-  width: "140px",
-  height: "auto",
-};
+import XIcon from "@mui/icons-material/X";
 
 function Copyright() {
   return (
-    <Typography variant="body2" color="text.secondary" mt={1}>
-      {"Copyright © "}
-      <Link href="#">Les patriotes du Sénégal&nbsp;</Link>
-      {new Date().getFullYear()}
+    <Typography variant="body2" color="text.secondary">
+      © {new Date().getFullYear()}{" "}
+      <Link href="#" underline="hover">
+        Les patriotes du Sénégal
+      </Link>
+      . All rights reserved.
     </Typography>
   );
 }
 
 export default function Footer() {
   return (
-    <Container
+    <Box
+      component="footer"
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: { xs: 4, sm: 8 },
-        py: { xs: 8, sm: 10 },
-        textAlign: { sm: "center", md: "left" },
+        width: "100%",
+        mt: 6,
+        borderTop: "1px solid",
+        borderColor: "divider",
+        py: { xs: 4, sm: 6 },
+        backgroundColor: "background.paper",
       }}
     >
-      <Box
+      <Container
+        maxWidth="lg"
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          pt: { xs: 4, sm: 8 },
-          width: "100%",
-          borderTop: "1px solid",
-          borderColor: "divider",
+          alignItems: { xs: "center", sm: "center" },
+          textAlign: { xs: "center", sm: "left" },
+          gap: 2,
         }}
       >
-        <div>
-          {/* <Link color="text.secondary" href="#">
-            Privacy Policy
-          </Link> */}
-          {/* <Typography display="inline" sx={{ mx: 0.5, opacity: 0.5 }}>
-            &nbsp;•&nbsp;
-          </Typography> */}
-          {/* <Link color="text.secondary" href="#">
-            Terms of Service
-          </Link> */}
-          <Copyright />
-        </div>
-        <Stack
-          direction="row"
-          justifyContent="left"
-          spacing={1}
-          useFlexGap
-          sx={{
-            color: "text.secondary",
-          }}
-        >
-          {/* <IconButton
+        {/* Left: Copyright */}
+        <Copyright />
+
+        {/* Right: Social icons */}
+        <Stack direction="row" spacing={1}>
+          <IconButton
             color="inherit"
-            href="https://github.com/mui"
             aria-label="GitHub"
-            sx={{ alignSelf: "center" }}
+            href="https://github.com"
+            target="_blank"
           >
-            <FacebookIcon />
-          </IconButton> */}
-          {/* <IconButton
+            <GitHubIcon />
+          </IconButton>
+
+          <IconButton
             color="inherit"
-            href="https://twitter.com/MaterialUI"
-            aria-label="X"
-            sx={{ alignSelf: "center" }}
-          >
-            <TwitterIcon />
-          </IconButton> */}
-          {/* <IconButton
-            color="inherit"
-            href="https://www.linkedin.com/company/mui/"
             aria-label="LinkedIn"
-            sx={{ alignSelf: "center" }}
+            href="https://linkedin.com"
+            target="_blank"
           >
             <LinkedInIcon />
-          </IconButton> */}
+          </IconButton>
+
+          <IconButton
+            color="inherit"
+            aria-label="X"
+            href="https://twitter.com"
+            target="_blank"
+          >
+            <XIcon />
+          </IconButton>
         </Stack>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 }

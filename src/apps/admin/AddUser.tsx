@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   FormControl,
   FormHelperText,
   InputLabel,
@@ -11,6 +10,12 @@ import {
   Select,
   TextField,
   Typography,
+  Checkbox,
+  Snackbar,
+  Alert,
+  Container,
+  Divider,
+  Chip,
 } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
@@ -21,51 +26,74 @@ const AddUser = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [roles, setRoles] = useState([]);
-  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [roles, setRoles] = useState<any[]>([]); // still unused / commented block
+  const [selectedRoles, setSelectedRoles] = useState<any[]>([]);
   const [profileId, setProfileId] = useState("");
-  const [profiles, setProfiles] = useState([]);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [profiles, setProfiles] = useState<any[]>([]); // still unused / commented block
 
-  const validateEmail = (email) => {
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const validateEmail = (value: string) => {
+    if (!value) return true; // don't show error until user types
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return emailRegex.test(value);
   };
 
-  const checkLoginExists = async (login) => {
+  const checkLoginExists = async (loginValue: string) => {
     try {
-      const response = await axios.get(`/api/users/check-login?login=${login}`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE}/api/users/check-login`,
+        { params: { login: loginValue } }
+      );
       return response.data.exists;
     } catch (error) {
       console.error("Error checking login:", error);
-      return false; // Consider the login available if there's an error
+      // If error happens, treat as "available" but notify via snackbar
+      setSnackbarMessage(
+        "Could not validate login uniqueness. Proceeding anyway."
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return false;
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError("");
-    setSuccessMessage("");
+    setFormError(null);
+    setSnackbarMessage("");
+    setSubmitting(true);
 
     if (!login || !password || !confirmPassword || !email) {
-      setError("All fields are required");
+      setFormError("All fields are required.");
+      setSubmitting(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setFormError("Passwords do not match.");
+      setSubmitting(false);
       return;
     }
 
     if (!validateEmail(email)) {
-      setError("Invalid email format");
+      setFormError("Invalid email format.");
+      setSubmitting(false);
       return;
     }
 
     const loginExists = await checkLoginExists(login);
     if (loginExists) {
-      setError("Login already exists");
+      setFormError("Login already exists.");
+      setSubmitting(false);
       return;
     }
 
@@ -77,120 +105,209 @@ const AddUser = () => {
       // profile: { id: profileId },
     };
 
-    axios
-      .post(`${import.meta.env.VITE_API_BASE}/api/users/add`, userData)
-      .then((response) => {
-        setSuccessMessage("User added successfully!");
-        setLogin("");
-        setPassword("");
-        setConfirmPassword("");
-        setEmail("");
-        setSelectedRoles([]);
-        setProfileId("");
-      })
-      .catch((error) => {
-        console.error("Error adding user:", error);
-        setError("An error occurred while adding the user.");
-      });
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE}/api/users/add`,
+        userData
+      );
+
+      setSnackbarMessage("User added successfully!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+
+      // Reset form
+      setLogin("");
+      setPassword("");
+      setConfirmPassword("");
+      setEmail("");
+      setSelectedRoles([]);
+      setProfileId("");
+    } catch (error) {
+      console.error("Error adding user:", error);
+      setSnackbarMessage("An error occurred while adding the user.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
     <Layout>
-      <Box sx={{ maxWidth: 600, margin: "auto", padding: 3 }}>
-        <Paper sx={{ p: 5 }}>
-          <Typography variant="h4" gutterBottom>
-            Add User
-          </Typography>
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label="Login"
-              fullWidth
-              margin="normal"
-              value={login}
-              onChange={(e) => setLogin(e.target.value)}
-              required
-            />
-            <TextField
-              label="Password"
-              type="password"
-              fullWidth
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <TextField
-              label="Confirm Password"
-              type="password"
-              fullWidth
-              margin="normal"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              error={!!error}
-              helperText={error}
-              required
-            />
-            <TextField
-              label="Email"
-              type="email"
-              fullWidth
-              margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={!validateEmail(email) && email !== ""}
-              helperText={
-                !validateEmail(email) && email !== ""
-                  ? "Invalid email format"
-                  : ""
-              }
-              required
-            />
-            {/* Uncomment this section to add profiles and roles selection */}
-            {/* 
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Profile</InputLabel>
-              <Select
-                value={profileId}
-                onChange={(e) => setProfileId(e.target.value)}
-                label="Profile"
-                required
-              >
-                {profiles.map((profile) => (
-                  <MenuItem key={profile.id} value={profile.id}>
-                    {profile.name} 
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Roles</InputLabel>
-              <Select
-                multiple
-                value={selectedRoles}
-                onChange={(e) => setSelectedRoles(e.target.value)}
-                renderValue={(selected) => selected.join(", ")}
-                MenuProps={{
-                  PaperProps: { style: { maxHeight: 224, width: 250 } },
-                }}
-              >
-                {roles.map((role) => (
-                  <MenuItem key={role.id} value={role.id}>
-                    <Checkbox checked={selectedRoles.indexOf(role.id) > -1} />
-                    <ListItemText primary={role.name} />
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>Select roles for the user</FormHelperText>
-            </FormControl>
-            */}
-            <Button type="submit" variant="contained" color="primary">
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="sm">
+          <Paper
+            elevation={4}
+            sx={{
+              p: { xs: 3, md: 4 },
+              borderRadius: 3,
+              backgroundColor: "background.paper",
+            }}
+          >
+            {/* Header */}
+            <Typography variant="h5" fontWeight={600} gutterBottom>
               Add User
-            </Button>
-            {successMessage && (
-              <Typography color="green">{successMessage}</Typography>
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+              Create a new application user with login credentials.
+            </Typography>
+
+            <Divider textAlign="left" sx={{ my: 3 }}>
+              <Chip
+                label="Account Details"
+                color="primary"
+                variant="outlined"
+              />
+            </Divider>
+
+            {formError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {formError}
+              </Alert>
             )}
-          </form>
-        </Paper>
+
+            <form onSubmit={handleSubmit} noValidate>
+              <TextField
+                label="Login"
+                fullWidth
+                margin="normal"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
+                required
+              />
+
+              <TextField
+                label="Password"
+                type="password"
+                fullWidth
+                margin="normal"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <TextField
+                label="Confirm Password"
+                type="password"
+                fullWidth
+                margin="normal"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+
+              <TextField
+                label="Email"
+                type="email"
+                fullWidth
+                margin="normal"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={!validateEmail(email) && email !== ""}
+                helperText={
+                  !validateEmail(email) && email !== ""
+                    ? "Invalid email format"
+                    : ""
+                }
+                required
+              />
+
+              {/* Profile & Roles (kept commented as in original) */}
+              {/*
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Profile</InputLabel>
+                <Select
+                  value={profileId}
+                  onChange={(e) => setProfileId(e.target.value as string)}
+                  label="Profile"
+                  required
+                >
+                  {profiles.map((profile) => (
+                    <MenuItem key={profile.id} value={profile.id}>
+                      {profile.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Roles</InputLabel>
+                <Select
+                  multiple
+                  value={selectedRoles}
+                  onChange={(e) =>
+                    setSelectedRoles(
+                      typeof e.target.value === "string"
+                        ? e.target.value.split(",")
+                        : e.target.value
+                    )
+                  }
+                  renderValue={(selected) =>
+                    (selected as string[]).join(", ")
+                  }
+                  MenuProps={{
+                    PaperProps: { style: { maxHeight: 224, width: 250 } },
+                  }}
+                >
+                  {roles.map((role) => (
+                    <MenuItem key={role.id} value={role.id}>
+                      <Checkbox
+                        checked={selectedRoles.indexOf(role.id) > -1}
+                      />
+                      <ListItemText primary={role.name} />
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>Select roles for the user</FormHelperText>
+              </FormControl>
+              */}
+
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={submitting}
+                >
+                  {submitting ? "Adding..." : "Add User"}
+                </Button>
+              </Box>
+            </form>
+          </Paper>
+
+          {/* Snackbar */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+          >
+            <Alert
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+        </Container>
       </Box>
     </Layout>
   );

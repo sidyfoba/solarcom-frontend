@@ -13,6 +13,11 @@ import {
   MenuItem,
   Chip,
   Snackbar,
+  Alert,
+  Container,
+  Stack,
+  Divider,
+  CircularProgress,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import axios from "axios";
@@ -36,6 +41,7 @@ interface Employee {
 const TeamList: React.FC = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<Team>({
@@ -54,17 +60,31 @@ const TeamList: React.FC = () => {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "success" | "error" | "info"
+  >("success");
+
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE}/api/hr/teams`
         );
-        setTeams(response.data);
+        setTeams(response.data || []);
         console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching teams:", error);
+      } catch (err) {
+        console.error("Error fetching teams:", err);
+        setError("Error fetching teams.");
+        setSnackbarMessage("Error fetching teams.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -73,9 +93,12 @@ const TeamList: React.FC = () => {
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE}/api/hr/employee/all`
         );
-        setEmployees(response.data);
-      } catch (error) {
-        console.error("Error fetching employees:", error);
+        setEmployees(response.data || []);
+      } catch (err) {
+        console.error("Error fetching employees:", err);
+        setSnackbarMessage("Error fetching employees.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     };
 
@@ -97,14 +120,14 @@ const TeamList: React.FC = () => {
       teamLeaderID: "",
       memberIDs: [],
     });
-    setResponsibilityInput(""); // Reset responsibility input
+    setResponsibilityInput("");
   };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setCurrentTeam({ ...currentTeam, [name]: value });
+    setCurrentTeam((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleMemberChange = (employeeID: string) => {
@@ -119,11 +142,14 @@ const TeamList: React.FC = () => {
   const handleAddResponsibility = () => {
     if (
       responsibilityInput.trim() &&
-      !currentTeam.responsibilities.includes(responsibilityInput)
+      !currentTeam.responsibilities.includes(responsibilityInput.trim())
     ) {
       setCurrentTeam((prev) => ({
         ...prev,
-        responsibilities: [...prev.responsibilities, responsibilityInput],
+        responsibilities: [
+          ...prev.responsibilities,
+          responsibilityInput.trim(),
+        ],
       }));
       setResponsibilityInput("");
     }
@@ -138,16 +164,15 @@ const TeamList: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      if (!currentTeam.name) {
+      if (!currentTeam.name.trim()) {
         setSnackbarMessage("Team Name is required.");
+        setSnackbarSeverity("error");
         setSnackbarOpen(true);
         return;
       }
 
       if (editMode) {
-        console.log("edit mode");
         const id = currentTeam.id;
-        console.log("        const id = currentTeam.id = " + id);
         await axios.put(
           `${import.meta.env.VITE_API_BASE}/api/hr/teams/${id}`,
           currentTeam
@@ -157,6 +182,8 @@ const TeamList: React.FC = () => {
             team.id === currentTeam.id ? { ...team, ...currentTeam } : team
           )
         );
+        setSnackbarMessage("Team updated successfully!");
+        setSnackbarSeverity("success");
       } else {
         const newTeam = {
           name: currentTeam.name,
@@ -168,20 +195,22 @@ const TeamList: React.FC = () => {
           `${import.meta.env.VITE_API_BASE}/api/hr/teams`,
           newTeam
         );
-        setTeams((prev) => [...prev, { ...response.data }]);
+        setTeams((prev) => [...prev, response.data]);
         setSnackbarMessage("Team added successfully!");
+        setSnackbarSeverity("success");
       }
+
       handleDialogClose();
-    } catch (error) {
-      console.error("Error saving team:", error);
+    } catch (err) {
+      console.error("Error saving team:", err);
       setSnackbarMessage("Error saving team. Please try again.");
+      setSnackbarSeverity("error");
     } finally {
       setSnackbarOpen(true);
     }
   };
 
   const handleEditTeam = (team: Team) => {
-    console.log(team);
     setCurrentTeam(team);
     setEditMode(true);
     handleDialogOpen();
@@ -203,11 +232,13 @@ const TeamList: React.FC = () => {
         `${import.meta.env.VITE_API_BASE}/api/hr/teams/${teamToDelete}`
       );
       setTeams((prev) => prev.filter((team) => team.id !== teamToDelete));
-      handleDeleteDialogClose();
       setSnackbarMessage("Team deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting team:", error);
+      setSnackbarSeverity("success");
+      handleDeleteDialogClose();
+    } catch (err) {
+      console.error("Error deleting team:", err);
       setSnackbarMessage("Error deleting team. Please try again.");
+      setSnackbarSeverity("error");
     } finally {
       setSnackbarOpen(true);
     }
@@ -231,16 +262,22 @@ const TeamList: React.FC = () => {
   );
 
   const columns: GridColDef[] = [
-    { field: "name", headerName: "Team Name", width: 200 },
-    { field: "teamLeaderID", headerName: "Team Leader", width: 200 },
+    { field: "name", headerName: "Team Name", flex: 1, minWidth: 200 },
+    {
+      field: "teamLeaderID",
+      headerName: "Team Leader",
+      flex: 1,
+      minWidth: 200,
+    },
     {
       field: "responsibilities",
       headerName: "Responsibilities",
-      width: 300,
+      flex: 2,
+      minWidth: 300,
       renderCell: (params) => (
-        <Box>
-          {params.value.map((resp: string) => (
-            <Chip key={resp} label={resp} />
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+          {(params.value || []).map((resp: string) => (
+            <Chip key={resp} label={resp} size="small" />
           ))}
         </Box>
       ),
@@ -248,11 +285,12 @@ const TeamList: React.FC = () => {
     {
       field: "edit",
       headerName: "Edit",
-      width: 100,
+      width: 110,
+      sortable: false,
       renderCell: (params) => (
         <Button
           variant="outlined"
-          color="primary"
+          size="small"
           onClick={() =>
             handleEditTeam(teams.find((team) => team.id === params.row.id)!)
           }
@@ -264,10 +302,12 @@ const TeamList: React.FC = () => {
     {
       field: "delete",
       headerName: "Delete",
-      width: 100,
+      width: 110,
+      sortable: false,
       renderCell: (params) => (
         <Button
           variant="outlined"
+          size="small"
           color="error"
           onClick={() => handleDeleteDialogOpen(params.row.id)}
         >
@@ -287,162 +327,286 @@ const TeamList: React.FC = () => {
 
   return (
     <Layout>
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h4">Teams</Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleDialogOpen}
-          >
-            Add Team
-          </Button>
-          <div style={{ height: 400, width: "100%", marginTop: "16px" }}>
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-              checkboxSelection={false}
-            />
-          </div>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Stack spacing={3}>
+            {/* Header */}
+            <Box>
+              <Typography variant="h4" fontWeight={600} gutterBottom>
+                Teams
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary">
+                Manage teams, responsibilities, leaders and members.
+              </Typography>
+            </Box>
 
+            {/* Main card */}
+            <Paper
+              elevation={4}
+              sx={{
+                p: { xs: 3, md: 4 },
+                borderRadius: 3,
+                backgroundColor: "background.paper",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
+                <Divider
+                  sx={{ flexGrow: 1, mr: 2 }}
+                  textAlign="left"
+                  variant="fullWidth"
+                >
+                  <Chip label="Teams List" color="primary" variant="outlined" />
+                </Divider>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleDialogOpen}
+                >
+                  Add Team
+                </Button>
+              </Box>
+
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 240,
+                  }}
+                >
+                  <CircularProgress />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    Loading teams...
+                  </Typography>
+                </Box>
+              ) : error ? (
+                <Typography color="error">{error}</Typography>
+              ) : teams.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No teams found. Create a team to get started.
+                </Typography>
+              ) : (
+                <Box sx={{ height: 450, width: "100%", mt: 1 }}>
+                  <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    disableSelectionOnClick
+                  />
+                </Box>
+              )}
+            </Paper>
+          </Stack>
+
+          {/* Add / Edit Team Dialog */}
           <Dialog
             open={openDialog}
             onClose={handleDialogClose}
-            PaperProps={{
-              sx: {
-                width: "800px",
-                maxWidth: "90%",
-              },
-            }}
+            fullWidth
+            maxWidth="md"
           >
             <DialogTitle>{editMode ? "Edit Team" : "Add New Team"}</DialogTitle>
             <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Team Name"
-                name="name"
-                fullWidth
-                required
-                value={currentTeam.name}
-                onChange={handleInputChange}
-                error={!currentTeam.name && editMode}
-                helperText={
-                  !currentTeam.name && editMode ? "Team Name is required." : ""
-                }
-              />
-              <TextField
-                margin="dense"
-                label="Add Responsibility"
-                value={responsibilityInput}
-                onChange={(e) => setResponsibilityInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddResponsibility();
-                  }
-                }}
-              />
-              <Box sx={{ display: "flex", flexWrap: "wrap", mt: 1 }}>
-                {currentTeam.responsibilities.map((resp) => (
-                  <Chip
-                    key={resp}
-                    label={resp}
-                    onDelete={() => handleDeleteResponsibility(resp)}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                ))}
-              </Box>
-              <Select
-                fullWidth
-                margin="dense"
-                name="teamLeaderID"
-                value={currentTeam.teamLeaderID}
-                onChange={handleInputChange}
-                displayEmpty
-              >
-                <MenuItem value="" disabled>
-                  Select Team Leader
-                </MenuItem>
-                {teamMembers.map((employee) => (
-                  <MenuItem key={employee.id} value={employee.id}>
-                    {employee.fullName}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Typography variant="subtitle1">Team Members:</Typography>
-              <Button variant="outlined" onClick={handleOpenEmployeeDialog}>
-                Manage Members
-              </Button>
-              <Box sx={{ pb: 2 }}></Box>
-              <div style={{ height: 260, width: "100%" }}>
-                <DataGrid
-                  rows={teamMembers}
-                  columns={[
-                    { field: "id", headerName: "ID", width: 90 },
-                    { field: "fullName", headerName: "Full Name", width: 200 },
-                    { field: "email", headerName: "Email", width: 200 },
-                    { field: "phone", headerName: "Phone", width: 150 },
-                    {
-                      field: "add",
-                      headerName: "Add to Team",
-                      width: 150,
-                      renderCell: (params) => (
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => handleMemberChange(params.row.id)}
-                        >
-                          {currentTeam.memberIDs.includes(params.row.id)
-                            ? "Remove"
-                            : "Add"}
-                        </Button>
-                      ),
-                    },
-                  ]}
-                  pageSize={5}
-                  rowsPerPageOptions={[5]}
-                  checkboxSelection={false}
+              <Box sx={{ mt: 1 }}>
+                <TextField
+                  margin="dense"
+                  label="Team Name"
+                  name="name"
+                  fullWidth
+                  required
+                  value={currentTeam.name}
+                  onChange={handleInputChange}
                 />
-              </div>
+
+                {/* Responsibilities */}
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Responsibilities
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                    <TextField
+                      label="Add Responsibility"
+                      value={responsibilityInput}
+                      onChange={(e) => setResponsibilityInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddResponsibility();
+                        }
+                      }}
+                      fullWidth
+                      size="small"
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={handleAddResponsibility}
+                    >
+                      Add
+                    </Button>
+                  </Box>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {currentTeam.responsibilities.map((resp) => (
+                      <Chip
+                        key={resp}
+                        label={resp}
+                        onDelete={() => handleDeleteResponsibility(resp)}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Team Leader */}
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Team Leader
+                  </Typography>
+                  <Select
+                    fullWidth
+                    name="teamLeaderID"
+                    value={currentTeam.teamLeaderID}
+                    onChange={(e) =>
+                      setCurrentTeam((prev) => ({
+                        ...prev,
+                        teamLeaderID: e.target.value as string,
+                      }))
+                    }
+                    displayEmpty
+                    size="small"
+                  >
+                    <MenuItem value="">
+                      <em>Select Team Leader</em>
+                    </MenuItem>
+                    {employees.map((employee) => (
+                      <MenuItem key={employee.id} value={employee.id}>
+                        {employee.fullName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+
+                {/* Team Members Table */}
+                <Box sx={{ mt: 3 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2">
+                      Team Members ({teamMembers.length})
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleOpenEmployeeDialog}
+                    >
+                      Manage Members
+                    </Button>
+                  </Box>
+                  <Box sx={{ height: 260, width: "100%" }}>
+                    <DataGrid
+                      rows={teamMembers}
+                      columns={[
+                        { field: "id", headerName: "ID", width: 90 },
+                        {
+                          field: "fullName",
+                          headerName: "Full Name",
+                          width: 200,
+                        },
+                        { field: "email", headerName: "Email", width: 220 },
+                        { field: "phone", headerName: "Phone", width: 150 },
+                        {
+                          field: "add",
+                          headerName: "In Team",
+                          width: 140,
+                          renderCell: (params) => (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              onClick={() => handleMemberChange(params.row.id)}
+                            >
+                              {currentTeam.memberIDs.includes(params.row.id)
+                                ? "Remove"
+                                : "Add"}
+                            </Button>
+                          ),
+                        },
+                      ]}
+                      pageSize={5}
+                      rowsPerPageOptions={[5]}
+                      disableSelectionOnClick
+                    />
+                  </Box>
+                </Box>
+              </Box>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleDialogClose} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} color="primary">
+              <Button onClick={handleDialogClose}>Cancel</Button>
+              <Button onClick={handleSubmit} variant="contained">
                 {editMode ? "Update Team" : "Add Team"}
               </Button>
             </DialogActions>
           </Dialog>
 
           {/* Employee Selection Dialog */}
-          <Dialog open={openEmployeeDialog} onClose={handleCloseEmployeeDialog}>
+          <Dialog
+            open={openEmployeeDialog}
+            onClose={handleCloseEmployeeDialog}
+            fullWidth
+            maxWidth="md"
+          >
             <DialogTitle>Select Employees</DialogTitle>
             <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Search Employees"
-                type="text"
-                fullWidth
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              />
-              <div style={{ height: 300, width: "100%" }}>
+              <Box sx={{ mt: 1 }}>
+                <TextField
+                  margin="dense"
+                  label="Search Employees"
+                  type="text"
+                  fullWidth
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                />
+              </Box>
+              <Box sx={{ height: 320, width: "100%", mt: 2 }}>
                 <DataGrid
                   rows={filteredEmployees}
                   columns={[
                     {
                       field: "add",
-                      headerName: "Add to Team",
-                      width: 150,
+                      headerName: "In Team",
+                      width: 140,
                       renderCell: (params) => (
                         <Button
                           variant="contained"
                           color="primary"
+                          size="small"
                           onClick={() => handleMemberChange(params.row.id)}
                         >
                           {currentTeam.memberIDs.includes(params.row.id)
@@ -452,24 +616,26 @@ const TeamList: React.FC = () => {
                       ),
                     },
                     { field: "id", headerName: "ID", width: 90 },
-                    { field: "fullName", headerName: "Full Name", width: 200 },
-                    { field: "email", headerName: "Email", width: 200 },
+                    {
+                      field: "fullName",
+                      headerName: "Full Name",
+                      width: 200,
+                    },
+                    { field: "email", headerName: "Email", width: 220 },
                     { field: "phone", headerName: "Phone", width: 150 },
                   ]}
                   pageSize={5}
                   rowsPerPageOptions={[5]}
-                  checkboxSelection={false}
+                  disableSelectionOnClick
                 />
-              </div>
+              </Box>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseEmployeeDialog} color="primary">
-                Close
-              </Button>
+              <Button onClick={handleCloseEmployeeDialog}>Close</Button>
             </DialogActions>
           </Dialog>
 
-          {/* Confirmation Dialog for Deleting Teams */}
+          {/* Delete Confirmation Dialog */}
           <Dialog open={openDeleteDialog} onClose={handleDeleteDialogClose}>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogContent>
@@ -478,23 +644,32 @@ const TeamList: React.FC = () => {
               </Typography>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleDeleteDialogClose} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={handleDeleteTeam} color="error">
+              <Button onClick={handleDeleteDialogClose}>Cancel</Button>
+              <Button
+                onClick={handleDeleteTeam}
+                color="error"
+                variant="contained"
+              >
                 Delete
               </Button>
             </DialogActions>
           </Dialog>
 
-          {/* Snackbar for Feedback Messages */}
+          {/* Snackbar */}
           <Snackbar
             open={snackbarOpen}
             autoHideDuration={6000}
             onClose={() => setSnackbarOpen(false)}
-            message={snackbarMessage}
-          />
-        </Paper>
+          >
+            <Alert
+              onClose={() => setSnackbarOpen(false)}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+        </Container>
       </Box>
     </Layout>
   );

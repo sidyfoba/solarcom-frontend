@@ -1,4 +1,4 @@
-// src/components/EditTemplate.js
+// src/components/EditTemplate.tsx (or .tsx)
 
 import { ArrowBack, Visibility, VisibilityOff } from "@mui/icons-material";
 import {
@@ -6,10 +6,12 @@ import {
   Box,
   Button,
   Checkbox,
+  Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   FormControl,
   FormControlLabel,
   Grid,
@@ -19,9 +21,11 @@ import {
   Paper,
   Select,
   Snackbar,
+  Stack,
   TextField,
   Tooltip,
   Typography,
+  Chip,
 } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -31,12 +35,14 @@ import { v4 as uuidv4 } from "uuid";
 import { useTranslation } from "react-i18next";
 
 interface Field {
-  id: number;
+  id: string;
   name: string;
   type: string;
   options: string[];
   required: boolean;
 }
+
+type SnackbarSeverity = "success" | "error" | "info" | "warning";
 
 const SiteEditTemplate = () => {
   const { id } = useParams();
@@ -47,21 +53,27 @@ const SiteEditTemplate = () => {
   const [fieldOptions, setFieldOptions] = useState("");
   const [isFieldRequired, setIsFieldRequired] = useState<boolean>(false);
   const [description, setDescription] = useState("");
+  const [active, setActive] = useState<boolean>(false);
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+
   const [confirmationDialogOpen, setConfirmationDialogOpen] =
     useState<boolean>(false);
   const [fieldToDelete, setFieldToDelete] = useState<Field | null>(null);
+
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [currentField, setCurrentField] = useState<Field | null>(null);
-  const [active, setActive] = useState<boolean>(false);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarSeverity, setSnackbarSeverity] =
+    useState<SnackbarSeverity>("success");
 
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Fetch template on load
   useEffect(() => {
     const fetchTemplate = async () => {
       try {
@@ -71,23 +83,26 @@ const SiteEditTemplate = () => {
           }/api/admin/infrastructure/site/template/${id}`
         );
         const { templateName, fields, description, active } = response.data;
+
         setTemplateName(templateName);
-        if (fields.length > 0) {
+        if (fields?.length > 0) {
           setFields(
-            fields.map((field) => ({
-              id: uuidv4(), // Generate unique ID// Use timestamp or other unique method
+            fields.map((field: any) => ({
+              id: uuidv4(),
               name: field.name,
-              type: field.type, // Default type, can be adjusted
-              options: field.options,
+              type: field.type,
+              options: field.options || [],
               required: field.required,
             }))
           );
         }
-
-        setDescription(description);
-        setActive(active); // Set the active status
+        setDescription(description || "");
+        setActive(active);
       } catch (err) {
         setError("Failed to load template");
+        setSnackbarMessage("Failed to load template");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     };
 
@@ -95,15 +110,18 @@ const SiteEditTemplate = () => {
   }, [id]);
 
   const handleAddField = () => {
-    if (!fieldName) return;
+    if (!fieldName.trim()) return;
 
     const newField: Field = {
       id: uuidv4(),
-      name: fieldName,
+      name: fieldName.trim(),
       type: fieldType,
       options:
         fieldType === "Select"
-          ? fieldOptions.split(",").map((opt) => opt.trim())
+          ? fieldOptions
+              .split(",")
+              .map((opt) => opt.trim())
+              .filter(Boolean)
           : [],
       required: isFieldRequired,
     };
@@ -112,13 +130,14 @@ const SiteEditTemplate = () => {
     setFieldName("");
     setFieldType("String");
     setFieldOptions("");
-    setIsFieldRequired(false); // Reset the required state
+    setIsFieldRequired(false);
   };
 
   const handleFieldEdit = (field: Field) => {
     setCurrentField(field);
     setDialogOpen(true);
   };
+
   const handleFieldDelete = (field: Field) => {
     setFieldToDelete(field);
     setConfirmationDialogOpen(true);
@@ -127,12 +146,13 @@ const SiteEditTemplate = () => {
   const handleConfirmDelete = () => {
     if (fieldToDelete) {
       setFields((prevFields) =>
-        prevFields.filter((field) => field.id !== fieldToDelete.id)
+        prevFields.filter((f) => f.id !== fieldToDelete.id)
       );
       setConfirmationDialogOpen(false);
       setFieldToDelete(null);
     }
   };
+
   const handleDialogClose = () => {
     setDialogOpen(false);
     setCurrentField(null);
@@ -160,9 +180,11 @@ const SiteEditTemplate = () => {
     setActive(false);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
+    setError(null);
+
     try {
       await axios.put(
         `${
@@ -178,12 +200,13 @@ const SiteEditTemplate = () => {
       setSnackbarMessage("Site template submitted successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      // navigate("/admin/projects/site/template/all"); // Redirect after successful update
-    } catch (err) {
-      setSnackbarMessage(error.message);
+      // navigate("/admin/projects/site/template/all");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Failed to update template";
+      setError(msg);
+      setSnackbarMessage(msg);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      setError(err.response?.data?.message || "Failed to update template");
     } finally {
       setLoading(false);
     }
@@ -192,178 +215,326 @@ const SiteEditTemplate = () => {
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
+
   const toggleActiveStatus = () => {
     setActive((prevActive) => !prevActive);
   };
+
   return (
     <Layout>
-      <Box sx={{ padding: 3, width: "100%" }}>
-        <Paper sx={{ p: 2 }}>
-          <Box display="flex" alignItems="center" mb={2}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="md">
+          {/* Header */}
+          <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton onClick={() => navigate(-1)} color="primary">
               <ArrowBack />
             </IconButton>
-            <Typography variant="h6" gutterBottom ml={2}>
-              {t("edit_template")}
-            </Typography>
+            <Box>
+              <Typography variant="h4" fontWeight={600}>
+                {t("edit_template")}
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary">
+                Edit the template name, structure, and activation status.
+              </Typography>
+            </Box>
           </Box>
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Template Name"
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
-              required
-              sx={{ mb: 2 }}
-            />
-            <Box sx={{ marginBottom: 2 }}>
-              <Typography variant="body">Fields</Typography>
-              <Box
-                sx={{
-                  maxHeight: 240, // Adjust this value as needed
-                  overflowY: "auto", // Enable vertical scrolling
-                  padding: 1, // Optional: add some padding inside the scrollable area
-                }}
-              >
-                {fields.map((field) => (
-                  <Grid
-                    container
-                    key={field.id}
-                    sx={{
-                      mb: 1,
-                      p: 1,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                    }}
-                    alignItems="center"
-                    spacing={2}
-                  >
-                    <Grid item xs>
-                      <Typography variant="body1">
-                        {field.name} ({field.type})
-                        {field.required ? "(Required)" : ""}
-                      </Typography>
+
+          <Paper
+            elevation={4}
+            sx={{
+              p: { xs: 3, md: 4 },
+              borderRadius: 3,
+              backgroundColor: "background.paper",
+            }}
+          >
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={4}>
+                {/* Template info */}
+                <Box>
+                  <Divider textAlign="left" sx={{ mb: 3 }}>
+                    <Chip
+                      label="Template Information"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Divider>
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={8}>
+                      <TextField
+                        fullWidth
+                        label="Template Name"
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        required
+                      />
                     </Grid>
-                    <Grid item>
-                      <Button
-                        variant="outlined"
-                        onClick={() => handleFieldEdit(field)}
+                    <Grid item xs={12} sm={4}>
+                      <Tooltip
+                        title={
+                          active ? "Click to deactivate" : "Click to activate"
+                        }
                       >
-                        Edit
-                      </Button>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: {
+                              xs: "flex-start",
+                              sm: "flex-end",
+                            },
+                            gap: 1,
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            Status:
+                          </Typography>
+                          <IconButton
+                            onClick={toggleActiveStatus}
+                            color={active ? "primary" : "default"}
+                          >
+                            {active ? <Visibility /> : <VisibilityOff />}
+                          </IconButton>
+                          <Typography variant="body2">
+                            {active ? "Active" : "Inactive"}
+                          </Typography>
+                        </Box>
+                      </Tooltip>
                     </Grid>
-                    <Grid item>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => handleFieldDelete(field)}
-                      >
-                        Delete
-                      </Button>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        required
+                        multiline
+                        minRows={2}
+                      />
                     </Grid>
                   </Grid>
-                ))}
-              </Box>
-            </Box>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Field Name"
-                  value={fieldName}
-                  onChange={(e) => setFieldName(e.target.value)}
-                />
-              </Grid>
+                </Box>
 
-              <Grid item xs={12} sm={4}>
-                <FormControl fullWidth>
-                  <InputLabel>Field Type</InputLabel>
-                  <Select
-                    label="Field Type"
-                    value={fieldType}
-                    onChange={(e) => setFieldType(e.target.value as string)}
+                {/* Fields list */}
+                <Box>
+                  <Divider textAlign="left" sx={{ mb: 3 }}>
+                    <Chip label="Fields" color="secondary" variant="outlined" />
+                  </Divider>
+
+                  <Box
+                    sx={{
+                      maxHeight: 240,
+                      overflowY: "auto",
+                      padding: 1,
+                      borderRadius: 1,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === "light"
+                          ? "grey.50"
+                          : "background.default",
+                    }}
                   >
-                    <MenuItem value="String">String</MenuItem>
-                    <MenuItem value="Number">Number</MenuItem>
-                    <MenuItem value="Date">Date</MenuItem>
-                    <MenuItem value="Select">Select</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isFieldRequired}
-                      onChange={(e) => setIsFieldRequired(e.target.checked)}
+                    {fields.length === 0 ? (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontStyle: "italic" }}
+                      >
+                        No fields defined yet. Use the form below to add new
+                        fields.
+                      </Typography>
+                    ) : (
+                      fields.map((field) => (
+                        <Grid
+                          container
+                          key={field.id}
+                          sx={{
+                            mb: 1,
+                            p: 1,
+                            borderBottom: "1px solid",
+                            borderColor: "divider",
+                          }}
+                          alignItems="center"
+                          spacing={2}
+                        >
+                          <Grid item xs>
+                            <Typography variant="body1">
+                              {field.name} ({field.type}){" "}
+                              {field.required ? "(Required)" : ""}
+                            </Typography>
+                            {field.type === "Select" &&
+                              field.options.length > 0 && (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  Options: {field.options.join(", ")}
+                                </Typography>
+                              )}
+                          </Grid>
+                          <Grid item>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => handleFieldEdit(field)}
+                            >
+                              Edit
+                            </Button>
+                          </Grid>
+                          <Grid item>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              color="error"
+                              onClick={() => handleFieldDelete(field)}
+                            >
+                              Delete
+                            </Button>
+                          </Grid>
+                        </Grid>
+                      ))
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Add field section */}
+                <Box>
+                  <Divider textAlign="left" sx={{ mb: 3 }}>
+                    <Chip
+                      label="Add / Edit Field Definition"
+                      color="info"
+                      variant="outlined"
                     />
-                  }
-                  label="Required"
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                {fieldType === "Select" && (
-                  <TextField
-                    fullWidth
-                    label="Options (comma separated)"
-                    value={fieldOptions}
-                    onChange={(e) => setFieldOptions(e.target.value)}
-                  />
-                )}
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  label="Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={12}>
-                <Tooltip
-                  title={active ? "Click to deactivate" : "Click to activate"}
+                  </Divider>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        label="Field Name"
+                        value={fieldName}
+                        onChange={(e) => setFieldName(e.target.value)}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <FormControl fullWidth>
+                        <InputLabel>Field Type</InputLabel>
+                        <Select
+                          label="Field Type"
+                          value={fieldType}
+                          onChange={(e) =>
+                            setFieldType(e.target.value as string)
+                          }
+                        >
+                          <MenuItem value="String">String</MenuItem>
+                          <MenuItem value="Number">Number</MenuItem>
+                          <MenuItem value="Date">Date</MenuItem>
+                          <MenuItem value="Select">Select</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={isFieldRequired}
+                            onChange={(e) =>
+                              setIsFieldRequired(e.target.checked)
+                            }
+                          />
+                        }
+                        label="Required"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      {fieldType === "Select" && (
+                        <TextField
+                          fullWidth
+                          label="Options (comma separated)"
+                          value={fieldOptions}
+                          onChange={(e) => setFieldOptions(e.target.value)}
+                          placeholder="e.g. low, medium, high"
+                        />
+                      )}
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Actions */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
                 >
-                  <IconButton
-                    onClick={toggleActiveStatus}
-                    color={active ? "primary" : "default"}
+                  <Button
+                    onClick={handleAddField}
+                    variant="outlined"
+                    color="primary"
                   >
-                    {active ? <Visibility /> : <VisibilityOff />}
-                  </IconButton>
-                </Tooltip>
-              </Grid>
-            </Grid>
+                    Add Field
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={loading}
+                  >
+                    {loading ? "Updating..." : "Update Template"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleClearForm}
+                  >
+                    Clear
+                  </Button>
+                </Box>
 
-            <Box sx={{ mt: 2 }}>
-              <Button onClick={handleAddField} variant="outlined">
-                Add Field
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{ ml: 2 }}
-                disabled={loading}
-              >
-                {loading ? "Updating..." : "Update Template"}
-              </Button>
-              <Button
-                type="button"
-                variant="outlined"
-                color="secondary"
-                sx={{ ml: 2 }}
-                onClick={handleClearForm}
-              >
-                Clear
-              </Button>
-            </Box>
-            {error && (
-              <Typography color="error" sx={{ mt: 2 }}>
-                {error}
-              </Typography>
-            )}
-          </form>
+                {error && (
+                  <Typography color="error" sx={{ mt: 1 }}>
+                    {error}
+                  </Typography>
+                )}
+              </Stack>
+            </form>
+          </Paper>
 
+          {/* Snackbar */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+          >
+            <Alert
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+
+          {/* Edit field dialog */}
           <Dialog open={dialogOpen} onClose={handleDialogClose}>
             <DialogTitle>Edit Field</DialogTitle>
             <DialogContent>
@@ -374,7 +545,10 @@ const SiteEditTemplate = () => {
                     label="Field Name"
                     value={currentField.name}
                     onChange={(e) =>
-                      setCurrentField({ ...currentField, name: e.target.value })
+                      setCurrentField({
+                        ...currentField,
+                        name: e.target.value,
+                      })
                     }
                     sx={{ mb: 2 }}
                   />
@@ -406,12 +580,14 @@ const SiteEditTemplate = () => {
                           ...currentField,
                           options: e.target.value
                             .split(",")
-                            .map((opt) => opt.trim()),
+                            .map((opt) => opt.trim())
+                            .filter(Boolean),
                         })
                       }
                     />
                   )}
                   <FormControlLabel
+                    sx={{ mt: 1 }}
                     control={
                       <Checkbox
                         checked={currentField.required}
@@ -433,39 +609,28 @@ const SiteEditTemplate = () => {
               <Button onClick={handleFieldUpdate}>Update</Button>
             </DialogActions>
           </Dialog>
-        </Paper>
 
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-        >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-            sx={{ width: "100%" }}
+          {/* Delete confirmation dialog */}
+          <Dialog
+            open={confirmationDialogOpen}
+            onClose={() => setConfirmationDialogOpen(false)}
           >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-
-        <Dialog
-          open={confirmationDialogOpen}
-          onClose={() => setConfirmationDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Deletion</DialogTitle>
-          <DialogContent>
-            <Typography>Are you sure you want to delete this field?</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setConfirmationDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmDelete} color="error">
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this field?
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setConfirmationDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmDelete} color="error">
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Container>
       </Box>
     </Layout>
   );

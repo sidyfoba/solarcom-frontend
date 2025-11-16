@@ -14,11 +14,15 @@ import {
   Snackbar,
   Alert,
   IconButton,
+  Container,
+  Stack,
+  Divider,
+  Chip,
 } from "@mui/material";
 import axios from "axios";
 import Layout from "../Layout";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowBack } from "@mui/icons-material";
 
 import TowerIcon from "@mui/icons-material/CellTower";
 import SignalCellularAltIcon from "@mui/icons-material/SignalCellularAlt";
@@ -43,128 +47,127 @@ import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import DataUsageIcon from "@mui/icons-material/DataUsage";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import BuildIcon from "@mui/icons-material/Build";
-import { ArrowBack } from "@mui/icons-material";
 
 const icons = [
   {
     value: "cell_tower",
     label: "Cell Towers",
-    icon: <TowerIcon />,
+    icon: <TowerIcon fontSize="small" />,
   },
   {
     value: "microwave_tower",
     label: "Microwave Towers",
-    icon: <SignalCellularAltIcon />,
+    icon: <SignalCellularAltIcon fontSize="small" />,
   },
   {
     value: "omni_antenna",
     label: "Omni-Directional Antennas",
-    icon: <WifiIcon />,
+    icon: <WifiIcon fontSize="small" />,
   },
   {
     value: "directional_antenna",
     label: "Directional Antennas",
-    icon: <WifiTetheringIcon />,
+    icon: <WifiTetheringIcon fontSize="small" />,
   },
   {
     value: "bts",
     label: "Base Transceiver Station (BTS)",
-    icon: <NetworkCellIcon />,
+    icon: <NetworkCellIcon fontSize="small" />,
   },
   {
     value: "bsc",
     label: "Base Station Controller (BSC)",
-    icon: <NetworkWifiIcon />,
+    icon: <NetworkWifiIcon fontSize="small" />,
   },
   {
     value: "equipment_shelter",
     label: "Equipment Shelters",
-    icon: <StorageIcon />,
+    icon: <StorageIcon fontSize="small" />,
   },
   {
     value: "cooling_system",
     label: "Cooling Systems",
-    icon: <AcUnitIcon />,
+    icon: <AcUnitIcon fontSize="small" />,
   },
   {
     value: "generator",
     label: "Generators",
-    icon: <PowerIcon />,
+    icon: <PowerIcon fontSize="small" />,
   },
   {
     value: "ups",
     label: "Uninterruptible Power Supplies (UPS)",
-    icon: <BatteryChargingFullIcon />,
+    icon: <BatteryChargingFullIcon fontSize="small" />,
   },
   {
     value: "batteries",
     label: "Batteries",
-    icon: <BatteryFullIcon />,
+    icon: <BatteryFullIcon fontSize="small" />,
   },
   {
     value: "microwave_radios",
     label: "Microwave Radios",
-    icon: <SignalCellularAltIcon />,
+    icon: <SignalCellularAltIcon fontSize="small" />,
   },
   {
     value: "fiber_optic_cables",
     label: "Fiber Optic Cables",
-    icon: <CableIcon />,
+    icon: <CableIcon fontSize="small" />,
   },
   {
     value: "satellite_links",
     label: "Satellite Links",
-    icon: <SatelliteIcon />,
+    icon: <SatelliteIcon fontSize="small" />,
   },
   {
     value: "leased_lines",
     label: "Leased Lines",
-    icon: <RouterIcon />,
+    icon: <RouterIcon fontSize="small" />,
   },
   {
     value: "network_noc",
     label: "Network Operation Centers (NOCs)",
-    icon: <NetworkCheckIcon />,
+    icon: <NetworkCheckIcon fontSize="small" />,
   },
   {
     value: "management_software",
     label: "Management Software",
-    icon: <SettingsIcon />,
+    icon: <SettingsIcon fontSize="small" />,
   },
   {
     value: "physical_security",
     label: "Physical Security",
-    icon: <SecurityIcon />,
+    icon: <SecurityIcon fontSize="small" />,
   },
   {
     value: "cybersecurity",
     label: "Cybersecurity Measures",
-    icon: <ShieldIcon />,
+    icon: <ShieldIcon fontSize="small" />,
   },
   {
     value: "fire_suppression",
     label: "Fire Suppression Systems",
-    icon: <FireExtinguisherIcon />,
+    icon: <FireExtinguisherIcon fontSize="small" />,
   },
   {
     value: "power_cables",
     label: "Power Cables",
-    icon: <ElectricBoltIcon />,
+    icon: <ElectricBoltIcon fontSize="small" />,
   },
   {
     value: "data_cables",
     label: "Data Cables",
-    icon: <DataUsageIcon />,
+    icon: <DataUsageIcon fontSize="small" />,
   },
   {
     value: "monitoring_systems",
     label: "Monitoring Systems",
-    icon: <DashboardIcon />,
+    icon: <DashboardIcon fontSize="small" />,
   },
   {
     value: "maintenance_tools",
     label: "Maintenance Tools",
-    icon: <BuildIcon />,
+    icon: <BuildIcon fontSize="small" />,
   },
 ];
 
@@ -174,37 +177,39 @@ const getIconByValue = (value: string) => {
 };
 
 const ElementEdit = () => {
-  const { id } = useParams(); // Get the site ID from URL params
-  const [templates, setTemplates] = useState([]);
-  const [element, setElement] = useState(null);
-  const [templateId, setTemplateId] = useState("");
-  const [templateName, setTemplateName] = useState("");
-  const [templateFields, setTemplateFields] = useState([]);
-  const [elementName, setElementName] = useState("");
-  const [formData, setFormData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [fieldsLoading, setFieldsLoading] = useState(false); // Add state for fields loading
-  const [error, setError] = useState(null);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const { id } = useParams();
+  const [element, setElement] = useState<any | null>(null);
+  const [templateId, setTemplateId] = useState<string>("");
+  const [templateName, setTemplateName] = useState<string>("");
+  const [templateFields, setTemplateFields] = useState<any[]>([]);
+  const [elementName, setElementName] = useState<string>("");
+  const [formData, setFormData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fieldsLoading, setFieldsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "success" | "error" | "info" | "warning"
+  >("success");
 
   const navigate = useNavigate();
 
+  // Load element
   useEffect(() => {
     const fetchElement = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE}/api/infrastructure/element/${id}`
         );
-        console.log("element information");
-        console.log(response.data);
-        setElement(response.data);
-        setElementName(response.data.elementName);
-        setTemplateId(response.data.elementTemplate.id);
-        setTemplateName(response.data.elementTemplate.templateName);
+        const data = response.data;
+        setElement(data);
+        setElementName(data.elementName);
+        setTemplateId(data.elementTemplate.id);
+        setTemplateName(data.elementTemplate.templateName);
       } catch (err) {
-        setError("Failed to load site");
+        setError("Failed to load element");
       } finally {
         setLoading(false);
       }
@@ -213,38 +218,22 @@ const ElementEdit = () => {
     fetchElement();
   }, [id]);
 
-  //   useEffect(() => {
-  //     const fetchTemplates = async () => {
-  //       try {
-  //         const response = await axios.get(
-  //           "http://localhost:8080/api/admin/infrastructure/element/template/all"
-  //         );
-  //         console.log("response from element template controller");
-  //         console.log(response.data);
-  //         setTemplates(response.data);
-  //       } catch (err) {
-  //         setError("Failed to load templates");
-  //       }
-  //     };
-
-  //     fetchTemplates();
-  //   }, []);
-
+  // Load template fields
   useEffect(() => {
     if (templateId) {
       const fetchTemplateFields = async () => {
-        setFieldsLoading(true); // Set fieldsLoading to true when starting the fetch
+        setFieldsLoading(true);
         try {
           const response = await axios.get(
             `${
               import.meta.env.VITE_API_BASE
             }/api/admin/infrastructure/element/template/${templateId}`
           );
-          setTemplateFields(response.data.fields);
+          setTemplateFields(response.data.fields || []);
         } catch (err) {
           setError("Failed to load template fields");
         } finally {
-          setFieldsLoading(false); // Set fieldsLoading to false when fetch is complete
+          setFieldsLoading(false);
         }
       };
 
@@ -252,17 +241,55 @@ const ElementEdit = () => {
     }
   }, [templateId]);
 
-  const handleInputChange = (e, fieldName) => {
+  // Initialize formData based on template fields + current element values
+  useEffect(() => {
+    if (!element || templateFields.length === 0) return;
+
+    const initialFormData = templateFields.map((field, index) => {
+      const value =
+        element.values && element.values.length > index
+          ? element.values[index].value
+          : "";
+      return {
+        key: field.name,
+        value: value || "",
+        required: field.required,
+        valueType: field.type,
+        htmlType: field.type === "Select" ? "dropdown" : "inputText",
+        options: field.options,
+      };
+    });
+
+    setFormData(initialFormData);
+  }, [templateFields, element]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: string
+  ) => {
+    const { value } = e.target;
     setFormData((prevData) =>
       prevData.map((item) =>
-        item.key === fieldName ? { ...item, value: e.target.value } : item
+        item.key === fieldName ? { ...item, value } : item
       )
     );
   };
 
-  const handleSubmit = async (event) => {
+  const handleSelectChange = (e: any, fieldName: string) => {
+    const value = e.target.value;
+    setFormData((prevData) =>
+      prevData.map((item) =>
+        item.key === fieldName ? { ...item, value } : item
+      )
+    );
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!element) return;
     setLoading(true);
+    setError(null);
+
     try {
       await axios.put(
         `${
@@ -270,20 +297,18 @@ const ElementEdit = () => {
         }/api/infrastructure/element/update-from-template`,
         {
           id: element.id,
-          elementName: elementName,
+          elementName,
           elementTemplate: element.elementTemplate,
           values: formData,
         }
       );
-      // navigate("/sites"); // Redirect after successful site creation
       setSnackbarMessage("Element submitted successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to update element");
-      setSnackbarMessage(
-        err.response?.data?.message || "Failed to update element"
-      );
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Failed to update element";
+      setError(msg);
+      setSnackbarMessage(msg);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
@@ -291,158 +316,236 @@ const ElementEdit = () => {
     }
   };
 
-  // Initialize formData based on template fields
-  useEffect(() => {
-    if (templateFields.length > 0) {
-      const initialFormData = templateFields.map((field, index) => {
-        // Check if element.values is null or has insufficient length
-        const value =
-          element.values && element.values.length > index
-            ? element.values[index].value
-            : "";
-        return {
-          key: field.name,
-          value: value || "", // Default to empty string if value is null or undefined
-          required: field.required,
-          valueType: field.type,
-          htmlType: field.type === "Select" ? "dropdown" : "inputText",
-          options: field.options,
-        };
-      });
-
-      setFormData(initialFormData);
-    }
-  }, [templateFields]);
-
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
+
   return (
     <Layout>
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ p: 2 }}>
-          <Box display="flex" alignItems="center" mb={2}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="md">
+          {/* Header */}
+          <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton onClick={() => navigate(-1)} color="primary">
               <ArrowBack />
             </IconButton>
-            <Typography variant="h6" gutterBottom>
-              Update Element from Template
-            </Typography>
+            <Box>
+              <Typography variant="h4" fontWeight={600}>
+                Update Element
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary">
+                Modify element information and its template-based attributes.
+              </Typography>
+            </Box>
           </Box>
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Template name"
-              value={templateName}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label="Element Name"
-              value={elementName}
-              onChange={(e) => setElementName(e.target.value)}
-              required
-              sx={{ mb: 2 }}
-            />
-            {fieldsLoading ? ( // Show loader when fields are loading
-              <Box sx={{ textAlign: "center", mt: 4 }}>
+
+          <Paper
+            elevation={4}
+            sx={{
+              p: { xs: 3, md: 4 },
+              borderRadius: 3,
+              backgroundColor: "background.paper",
+            }}
+          >
+            {loading && !element ? (
+              <Box sx={{ textAlign: "center", py: 4 }}>
                 <CircularProgress />
                 <Typography variant="body1" sx={{ mt: 2 }}>
-                  Loading fields...
+                  Loading element...
                 </Typography>
               </Box>
             ) : (
-              <Grid container spacing={2}>
-                {formData.map((field) => (
-                  <Grid item xs={12} sm={6} key={field.key}>
-                    {field.htmlType === "inputText" &&
-                      field.valueType === "String" && (
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={4}>
+                  {/* Element / Template Info */}
+                  <Box>
+                    <Divider textAlign="left" sx={{ mb: 3 }}>
+                      <Chip
+                        label="Element & Template Information"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Divider>
+
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
                         <TextField
                           fullWidth
-                          label={field.key}
-                          value={field.value}
-                          onChange={(e) => handleInputChange(e, field.key)}
-                          required={field.required} // Set required attribute based on field data
-                          sx={{ mb: 2 }}
+                          label="Template Name"
+                          value={templateName}
+                          sx={{ mb: { xs: 1, md: 0 } }}
+                          disabled
                         />
-                      )}
-                    {field.htmlType === "inputText" &&
-                      field.valueType === "Number" && (
+                      </Grid>
+                      <Grid item xs={12}>
                         <TextField
                           fullWidth
-                          type="number"
-                          label={field.key}
-                          value={field.value}
-                          onChange={(e) => handleInputChange(e, field.key)}
-                          required={field.required} // Set required attribute based on field data
-                          sx={{ mb: 2 }}
+                          label="Element Name"
+                          value={elementName}
+                          onChange={(e) => setElementName(e.target.value)}
+                          required
                         />
-                      )}
-                    {field.htmlType === "inputText" &&
-                      field.valueType === "Date" && (
-                        <TextField
-                          fullWidth
-                          type="date"
-                          label={field.key}
-                          value={field.value}
-                          onChange={(e) => handleInputChange(e, field.key)}
-                          required={field.required} // Set required attribute based on field data
-                          sx={{ mb: 2 }}
-                          InputLabelProps={{ shrink: true }}
-                        />
-                      )}
-                    {field.htmlType === "dropdown" &&
-                      field.valueType === "Select" && (
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                          <InputLabel>{field.key}</InputLabel>
-                          <Select
-                            label={field.key}
-                            value={field.value}
-                            onChange={(e) => handleInputChange(e, field.key)}
-                            required={field.required} // Set required attribute based on field data
-                          >
-                            {field.options?.map((option, index) => (
-                              <MenuItem key={index} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      )}
-                  </Grid>
-                ))}
-              </Grid>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  {/* Template Fields */}
+                  <Box>
+                    <Divider textAlign="left" sx={{ mb: 3 }}>
+                      <Chip
+                        label="Template Fields"
+                        color="secondary"
+                        variant="outlined"
+                      />
+                    </Divider>
+
+                    {fieldsLoading ? (
+                      <Box sx={{ textAlign: "center", mt: 2 }}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ mt: 2 }}>
+                          Loading fields...
+                        </Typography>
+                      </Box>
+                    ) : formData.length === 0 ? (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1 }}
+                      >
+                        No configurable fields for this template.
+                      </Typography>
+                    ) : (
+                      <Grid container spacing={2}>
+                        {formData.map((field) => (
+                          <Grid item xs={12} sm={6} key={field.key}>
+                            {field.htmlType === "inputText" &&
+                              field.valueType === "String" && (
+                                <TextField
+                                  fullWidth
+                                  label={field.key}
+                                  value={field.value}
+                                  onChange={(e) =>
+                                    handleInputChange(e, field.key)
+                                  }
+                                  required={field.required}
+                                />
+                              )}
+
+                            {field.htmlType === "inputText" &&
+                              field.valueType === "Number" && (
+                                <TextField
+                                  fullWidth
+                                  type="number"
+                                  label={field.key}
+                                  value={field.value}
+                                  onChange={(e) =>
+                                    handleInputChange(e, field.key)
+                                  }
+                                  required={field.required}
+                                />
+                              )}
+
+                            {field.htmlType === "inputText" &&
+                              field.valueType === "Date" && (
+                                <TextField
+                                  fullWidth
+                                  type="date"
+                                  label={field.key}
+                                  value={field.value}
+                                  onChange={(e) =>
+                                    handleInputChange(e, field.key)
+                                  }
+                                  required={field.required}
+                                  InputLabelProps={{ shrink: true }}
+                                />
+                              )}
+
+                            {field.htmlType === "dropdown" &&
+                              field.valueType === "Select" && (
+                                <FormControl fullWidth>
+                                  <InputLabel>{field.key}</InputLabel>
+                                  <Select
+                                    label={field.key}
+                                    value={field.value}
+                                    onChange={(e) =>
+                                      handleSelectChange(e, field.key)
+                                    }
+                                    required={field.required}
+                                  >
+                                    {field.options?.map(
+                                      (option: string, index: number) => (
+                                        <MenuItem
+                                          key={`${field.key}-${index}`}
+                                          value={option}
+                                        >
+                                          {option}
+                                        </MenuItem>
+                                      )
+                                    )}
+                                  </Select>
+                                </FormControl>
+                              )}
+                          </Grid>
+                        ))}
+                      </Grid>
+                    )}
+                  </Box>
+
+                  {/* Error + Submit */}
+                  <Box>
+                    {error && (
+                      <Typography color="error" sx={{ mb: 1 }}>
+                        {error}
+                      </Typography>
+                    )}
+                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        disabled={loading}
+                        startIcon={
+                          loading ? <CircularProgress size={18} /> : null
+                        }
+                      >
+                        {loading ? "Updating..." : "Update Element"}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Stack>
+              </form>
             )}
-            <Box sx={{ mt: 2 }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : "Update"}
-              </Button>
-              {error && (
-                <Typography color="error" sx={{ mt: 2 }}>
-                  {error}
-                </Typography>
-              )}
-            </Box>
-          </form>
-        </Paper>
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-        >
-          <Alert
+          </Paper>
+
+          {/* Snackbar */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
             onClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-            sx={{ width: "100%" }}
           >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+            <Alert
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+        </Container>
       </Box>
     </Layout>
   );

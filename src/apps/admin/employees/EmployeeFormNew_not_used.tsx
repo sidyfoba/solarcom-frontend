@@ -1,22 +1,21 @@
 import * as React from "react";
 import { useTheme } from "@mui/material/styles";
 import {
+  Alert,
   Box,
-  Tabs,
-  Tab,
-  Typography,
+  Chip,
+  Container,
+  Divider,
   Paper,
   Snackbar,
-  Alert,
-  Container,
   Stack,
-  Divider,
-  Chip,
+  Tab,
+  Tabs,
+  Typography,
 } from "@mui/material";
 import Layout from "../Layout";
 import PersonalInfo from "./EmployeeComponents/PersonalInfo";
 import EmployeeDetails from "./EmployeeComponents/EmployeeDetails";
-import { useParams } from "react-router-dom";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -36,7 +35,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`employee-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -48,20 +47,19 @@ function a11yProps(index: number) {
   };
 }
 
-export default function EditEmployee() {
+const EmployeeFormNew: React.FC = () => {
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
-  const { id } = useParams<{ id: string }>();
+
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState("");
   const [snackbarSeverity, setSnackbarSeverity] = React.useState<
     "success" | "error"
   >("success");
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -87,10 +85,10 @@ export default function EditEmployee() {
           alignItems: "flex-start",
           py: { xs: 4, md: 6 },
           px: { xs: 2, md: 4 },
-          bgcolor: (th) =>
-            th.palette.mode === "light"
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
               ? "grey.100"
-              : th.palette.background.default,
+              : theme.palette.background.default,
         }}
       >
         <Container maxWidth="lg">
@@ -98,14 +96,15 @@ export default function EditEmployee() {
             {/* Header */}
             <Box>
               <Typography variant="h4" fontWeight={600} gutterBottom>
-                Edit Employee
+                Employee Record
               </Typography>
               <Typography variant="subtitle1" color="text.secondary">
-                Update personal information and employment details for this
-                employee.
+                Capture general information, employment details, health, and
+                social/professional life of the employee.
               </Typography>
             </Box>
 
+            {/* Main card with tabs */}
             <Paper
               elevation={4}
               sx={{
@@ -114,7 +113,7 @@ export default function EditEmployee() {
                 backgroundColor: "background.paper",
               }}
             >
-              <Divider textAlign="left" sx={{ mb: 2 }}>
+              <Divider textAlign="left" sx={{ mb: 3 }}>
                 <Chip
                   label="Employee Profile"
                   color="primary"
@@ -125,42 +124,58 @@ export default function EditEmployee() {
               <Tabs
                 value={value}
                 onChange={handleChange}
-                indicatorColor="secondary"
-                textColor="inherit"
+                indicatorColor="primary"
+                textColor="primary"
                 variant="scrollable"
                 scrollButtons="auto"
-                aria-label="Edit employee tabs"
-                sx={{ borderBottom: 1, borderColor: "divider", mb: 1 }}
+                aria-label="Employee sections"
               >
-                <Tab label="Employee Info" {...a11yProps(0)} />
+                <Tab label="Employee Infos" {...a11yProps(0)} />
                 <Tab label="Employee Details" {...a11yProps(1)} />
+                <Tab label="Santé" {...a11yProps(2)} />
+                <Tab label="Vie sociale et professionnelle" {...a11yProps(3)} />
               </Tabs>
 
-              <TabPanel value={value} index={0} dir={theme.direction}>
-                <PersonalInfo onSnackbarOpen={handleSnackbarOpen} id={id} />
-              </TabPanel>
+              <Box sx={{ mt: 1 }}>
+                <TabPanel value={value} index={0} dir={theme.direction}>
+                  <PersonalInfo onSnackbarOpen={handleSnackbarOpen} />
+                </TabPanel>
 
-              <TabPanel value={value} index={1} dir={theme.direction}>
-                <EmployeeDetails onSnackbarOpen={handleSnackbarOpen} id={id} />
-              </TabPanel>
+                <TabPanel value={value} index={1} dir={theme.direction}>
+                  <EmployeeDetails onSnackbarOpen={handleSnackbarOpen} />
+                </TabPanel>
+
+                <TabPanel value={value} index={2} dir={theme.direction}>
+                  {/* Replace with your future Health/Santé form */}
+                  <PersonalInfo onSnackbarOpen={handleSnackbarOpen} />
+                </TabPanel>
+
+                <TabPanel value={value} index={3} dir={theme.direction}>
+                  {/* Replace with your future Social/Professional life form */}
+                  <PersonalInfo onSnackbarOpen={handleSnackbarOpen} />
+                </TabPanel>
+              </Box>
             </Paper>
-
-            <Snackbar
-              open={snackbarOpen}
-              autoHideDuration={6000}
-              onClose={handleSnackbarClose}
-            >
-              <Alert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                sx={{ width: "100%" }}
-              >
-                {snackbarMessage}
-              </Alert>
-            </Snackbar>
           </Stack>
+
+          {/* Snackbar */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+          >
+            <Alert
+              onClose={handleSnackbarClose}
+              severity={snackbarSeverity}
+              sx={{ width: "100%" }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
         </Container>
       </Box>
     </Layout>
   );
-}
+};
+
+export default EmployeeFormNew;

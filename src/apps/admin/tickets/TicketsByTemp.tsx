@@ -1,17 +1,20 @@
-// src/components/Tickets.js
+// src/components/TicketTemplatesList.tsx
 
 import React, { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Box,
-  CircularProgress,
   Typography,
   Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
   IconButton,
+  CircularProgress,
+  Container,
+  Stack,
+  Divider,
+  Chip,
   Snackbar,
   Alert,
   Dialog,
@@ -20,30 +23,34 @@ import {
   DialogTitle,
   Button,
 } from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
 import axios from "axios";
 import Layout from "../Layout";
 import { useNavigate } from "react-router-dom";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 
-const TicketsByTemp = () => {
-  const [templates, setTemplates] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [columns, setColumns] = useState([]);
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface TicketTemplate {
+  id: string;
+  templateName: string;
+  description?: string;
+  // Add other props if your API returns them (e.g. icon, createdAt, etc.)
+}
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+const TicketTemplatesList: React.FC = () => {
+  const [templates, setTemplates] = useState<TicketTemplate[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [openDialog, setOpenDialog] = useState(false);
-  const [ticketToDelete, setTicketToDelete] = useState(null);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
+
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
   const navigate = useNavigate();
 
-  // Fetch templates
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -52,191 +59,201 @@ const TicketsByTemp = () => {
             import.meta.env.VITE_API_BASE
           }/api/admin/process/ticket/template/all`
         );
-        setTemplates(response.data.templates);
+        // API returns `templates` for tickets
+        setTemplates(response.data.templates || []);
+        console.log(response.data);
       } catch (err) {
         setError("Failed to load templates");
+        setSnackbarMessage("Failed to load templates");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchTemplates();
   }, []);
 
-  // Fetch tickets based on selected template
-  useEffect(() => {
-    if (!selectedTemplate) return; // Do nothing if no template is selected
-
-    const fetchTickets = async () => {
-      setLoading(true); // Start loading
-      try {
-        const response = await axios.get(
-          `${
-            import.meta.env.VITE_API_BASE
-          }/api/admin/process/ticket/template/${selectedTemplate}`
-        );
-        const ticketsData = response.data;
-        console.log("list of tickets");
-        console.log(response.data);
-        // Dynamically generate columns based on the template fields
-        const valueColumns = ticketsData.fields.map((field) => ({
-          field: field.name,
-          headerName: field.name.charAt(0).toUpperCase() + field.name.slice(1),
-          width: 150,
-          type: field.valueType === "Number" ? "number" : "string",
-        }));
-
-        // Setting up columns with edit and delete actions
-        setColumns([
-          {
-            field: "edit",
-            headerName: "Edit",
-            width: 60,
-            renderCell: (params) => (
-              <IconButton
-                color="primary"
-                onClick={() =>
-                  navigate(
-                    `/admin/projects/ticket/by/template/edit/${params.row.id}`
-                  )
-                }
-              >
-                <EditIcon />
-              </IconButton>
-            ),
-          },
-          {
-            field: "delete",
-            headerName: "Delete",
-            width: 100,
-            renderCell: (params) => (
-              <IconButton
-                color="secondary"
-                onClick={() => handleDelete(params.row.id)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            ),
-          },
-          { field: "id", headerName: "ID", width: 150 },
-          { field: "title", headerName: "Title", width: 200 },
-          ...valueColumns,
-        ]);
-
-        // Fetch tickets for the selected template
-        const ticketsResponse = await axios.get(
-          `${
-            import.meta.env.VITE_API_BASE
-          }/api/process/tickets/all/${selectedTemplate}`
-        );
-        const tickets = ticketsResponse.data;
-
-        // Map ticket data to rows with dynamic fields
-        const formattedRows = tickets.map((ticket) => ({
-          id: ticket.id,
-          title: ticket.title,
-          ...ticket.values?.reduce((acc, value) => {
-            acc[value.key] = value.value;
-            return acc;
-          }, {}),
-        }));
-
-        setRows(formattedRows);
-      } catch (err) {
-        setError("Failed to load tickets");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTickets();
-  }, [selectedTemplate]);
-
-  // Handle delete button click
-  const handleDelete = (ticketId) => {
-    setTicketToDelete(ticketId);
-    setOpenDialog(true); // Show confirmation dialog
+  const handleEdit = (templateId: string) => {
+    navigate(`/admin/projects/ticket/template/edit/${templateId}`);
   };
 
-  // Confirm delete action
+  const handleDeleteClick = (templateId: string) => {
+    setTemplateToDelete(templateId);
+    setOpenDialog(true);
+  };
+
   const confirmDelete = async () => {
+    if (!templateToDelete) return;
+
     try {
       await axios.delete(
         `${
           import.meta.env.VITE_API_BASE
-        }/api/infrastructure/site/${ticketToDelete}`
+        }/api/admin/process/touble-ticket/template/delete/${templateToDelete}`
       );
-      setSnackbarMessage("Ticket deleted successfully.");
+      const temps = templates.filter(
+        (template) => template.id !== templateToDelete
+      );
+      setTemplates(temps);
+      setSnackbarMessage("Template deleted successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-
-      // Refresh the rows by removing the deleted ticket
-      setRows(rows.filter((row) => row.id !== ticketToDelete));
     } catch (err) {
-      setSnackbarMessage("Failed to delete ticket.");
+      setError("Failed to delete template");
+      setSnackbarMessage("Failed to delete template.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     } finally {
       setOpenDialog(false);
-      setTicketToDelete(null);
+      setTemplateToDelete(null);
     }
   };
 
-  // Cancel delete action
   const cancelDelete = () => {
     setOpenDialog(false);
-    setTicketToDelete(null);
+    setTemplateToDelete(null);
   };
 
-  // Close the snackbar
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
 
   return (
     <Layout>
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            List of Tickets
-          </Typography>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Template</InputLabel>
-            <Select
-              label="Template"
-              value={selectedTemplate}
-              onChange={(e) => setSelectedTemplate(e.target.value)}
-              required
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="md">
+          {/* Header */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h4" fontWeight={600} gutterBottom>
+              Ticket Templates
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Browse, edit, and delete ticket templates used to create tickets
+              from predefined structures.
+            </Typography>
+          </Box>
+
+          <Stack spacing={3}>
+            <Paper
+              elevation={4}
+              sx={{
+                p: { xs: 3, md: 4 },
+                borderRadius: 3,
+                backgroundColor: "background.paper",
+              }}
             >
-              {templates.map((template) => (
-                <MenuItem key={template.id} value={template.id}>
-                  {template.templateName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <Divider textAlign="left" sx={{ mb: 3 }}>
+                <Chip
+                  label="Template List"
+                  color="primary"
+                  variant="outlined"
+                />
+              </Divider>
 
-          {loading ? (
-            <CircularProgress />
-          ) : error ? (
-            <Typography color="error">{error}</Typography>
-          ) : (
-            <Paper sx={{ height: 600, width: "100%" }}>
-              <DataGrid
-                rows={rows}
-                columns={columns}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-                disableSelectionOnClick
-              />
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 200,
+                  }}
+                >
+                  <CircularProgress />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    Loading templates...
+                  </Typography>
+                </Box>
+              ) : error ? (
+                <Typography color="error">{error}</Typography>
+              ) : templates.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No ticket templates found. Create a new ticket template to get
+                  started.
+                </Typography>
+              ) : (
+                <List>
+                  {templates.map((template) => (
+                    <ListItem key={template.id} divider alignItems="flex-start">
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1" fontWeight={500}>
+                            {template.templateName}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {template.description || "No description"}
+                          </Typography>
+                        }
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="edit"
+                          onClick={() => handleEdit(template.id)}
+                          sx={{ mr: 1 }}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleDeleteClick(template.id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
             </Paper>
-          )}
-        </Paper>
 
-        {/* Delete Confirmation Dialog */}
+            {/* Snackbar */}
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
+              onClose={handleSnackbarClose}
+            >
+              <Alert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessage}
+              </Alert>
+            </Snackbar>
+          </Stack>
+        </Container>
+
+        {/* Delete confirmation dialog */}
         <Dialog open={openDialog} onClose={cancelDelete}>
           <DialogTitle>Confirm Deletion</DialogTitle>
           <DialogContent>
             <Typography>
-              Are you sure you want to delete this ticket?
+              Are you sure you want to delete this ticket template?
             </Typography>
           </DialogContent>
           <DialogActions>
@@ -246,24 +263,9 @@ const TicketsByTemp = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* Snackbar for success/error messages */}
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-        >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-            sx={{ width: "100%" }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
       </Box>
     </Layout>
   );
 };
 
-export default TicketsByTemp;
+export default TicketTemplatesList;

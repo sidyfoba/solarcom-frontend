@@ -1,59 +1,31 @@
-import {
-  Button,
-  Card,
-  CardActionArea,
-  CardContent,
-  Hidden,
-  Link,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-} from "@mui/material";
 import * as React from "react";
-
-import { styled, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
+import {
+  Box,
+  CssBaseline,
+  Toolbar,
+  Container,
+  Grid,
+  Divider,
+  IconButton,
+  Typography,
+  FormControl,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  useTheme,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import MuiDrawer from "@mui/material/Drawer";
-import Box from "@mui/material/Box";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import LogoutIcon from "@mui/icons-material/Logout";
 
 import Footer from "./Footer";
 import MainListItems from "./listItems";
-import { useNavigate } from "react-router-dom";
-import LanguageSwitcher from "../../components/LanguageSwitcher";
-import { useLayoutContext } from "./LayoutProvider";
+// import LanguageSwitcher from "../../components/LanguageSwitcher";
+import i18n from "../../i18n";
 
-function Copyright(props: any) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
-const drawerWidth: number = 240;
+const drawerWidth = 240;
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -63,6 +35,9 @@ const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
+  background: "linear-gradient(90deg, #004aad 0%, #0066ff 50%, #ffcc00 100%)",
+  color: "#ffffff",
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.18)",
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -84,6 +59,7 @@ const Drawer = styled(MuiDrawer, {
     position: "relative",
     whiteSpace: "nowrap",
     width: drawerWidth,
+    borderRight: "1px solid rgba(0,0,0,0.08)",
     transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -91,10 +67,6 @@ const Drawer = styled(MuiDrawer, {
     boxSizing: "border-box",
     ...(!open && {
       overflowX: "hidden",
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
       width: theme.spacing(7),
       [theme.breakpoints.up("sm")]: {
         width: theme.spacing(9),
@@ -103,100 +75,170 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-// const defaultTheme = createTheme();
-
-// Interface for props passed to the Layout component
 interface LayoutProps {
-  children: React.ReactNode; // Represents any valid React child element
-  // roles: string[];
-  // drawerMenuSecondaryList?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  // console.log("roles in Layout");
-  // console.log(roles);
+  const theme = useTheme();
 
-  // const [openSite, setOpenSite] = React.useState(false);
-  // const [openElement, setOpenElement] = React.useState(false);
-  // const { openSite, setOpenSite, openElement, setOpenElement } =
-  //   useLayoutContext();
+  // Persist drawer state in localStorage
+  const [open, setOpen] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = window.localStorage.getItem("adminDrawerOpen");
+    return stored === null ? true : stored === "true";
+  });
 
-  const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
-    setOpen(!open);
+    setOpen((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("adminDrawerOpen", String(next));
+      }
+      return next;
+    });
   };
-  // const navigate = useNavigate();
-  // const handleDisconnect = () => {
-  //   sessionStorage.removeItem("jwt"); // Remove JWT token from localStorage
-  //   Perform any additional logout actions if needed
-  //   navigate("/login"); // Redirect to login page or another appropriate route
-  // };
+
+  // Language dropdown state
+  const [language, setLanguage] = React.useState<string>(i18n.language || "en");
+
+  const handleLanguageChange = (event: SelectChangeEvent) => {
+    const value = event.target.value as string;
+    setLanguage(value);
+    i18n.changeLanguage(value);
+  };
+
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <CssBaseline />
+
+      {/* Top AppBar */}
       <AppBar position="absolute" open={open}>
-        <Toolbar
-          sx={{
-            pr: "24px", // keep right padding when drawer closed
-          }}
-        >
+        <Toolbar sx={{ pr: "24px" }}>
+          {/* Burger icon when drawer is closed */}
           <IconButton
             edge="start"
             color="inherit"
             aria-label="open drawer"
             onClick={toggleDrawer}
             sx={{
-              marginRight: "36px",
+              marginRight: "24px",
               ...(open && { display: "none" }),
             }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography
-            component="h1"
-            variant="h6"
-            color="inherit"
-            noWrap
-            sx={{ flexGrow: 1 }}
+
+          {/* Brand / Logo */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              flexGrow: 1,
+            }}
           >
-            Solarcom
-          </Typography>
-          <Hidden xsDown>
-            {/* Visible on screens larger than xs (sm, md, lg, xl) */}
-            {/* <img
-              src={senegalFlagUrl}
-              alt="Senegal Flag"
-              style={{ height: 30, marginRight: 10 }}
-            /> */}
-          </Hidden>
-          <LanguageSwitcher />
+            <Box
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                bgcolor: "#ffcc00",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#004aad",
+                fontWeight: 800,
+                fontSize: 18,
+                boxShadow: "0 0 0 2px rgba(255,255,255,0.6)",
+              }}
+            >
+              S
+            </Box>
+            <Box>
+              <Typography
+                component="h1"
+                variant="h6"
+                color="inherit"
+                noWrap
+                sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+              >
+                Solarcom Admin
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ opacity: 0.9, fontSize: 12, lineHeight: 1.2 }}
+              >
+                Project • HR • Tickets • Tasks
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Language dropdown */}
+          <FormControl
+            size="small"
+            sx={{
+              minWidth: 120,
+              ml: 2,
+              "& .MuiOutlinedInput-root": {
+                bgcolor: "rgba(255,255,255,0.12)",
+                color: "#fff",
+                "& fieldset": {
+                  borderColor: "rgba(255,255,255,0.4)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#ffeb3b",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#ffeb3b",
+                },
+              },
+              "& .MuiSvgIcon-root": {
+                color: "#fff",
+              },
+            }}
+          >
+            <Select
+              value={language}
+              onChange={handleLanguageChange}
+              displayEmpty
+              inputProps={{ "aria-label": "Select language" }}
+            >
+              <MenuItem value="en">English</MenuItem>
+              <MenuItem value="fr">Français</MenuItem>
+              {/* Add more languages if needed */}
+            </Select>
+          </FormControl>
         </Toolbar>
       </AppBar>
+
+      {/* Side Drawer */}
       <Drawer variant="permanent" open={open}>
         <Toolbar
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
-            px: [1],
+            justifyContent: open ? "space-between" : "center",
+            px: 1,
           }}
         >
-          <IconButton onClick={toggleDrawer}>
+          {open && (
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 600, color: theme.palette.text.secondary }}
+            >
+              Navigation
+            </Typography>
+          )}
+          <IconButton onClick={toggleDrawer} size="small">
             <ChevronLeftIcon />
           </IconButton>
         </Toolbar>
         <Divider />
-
-        <MainListItems />
-        {/* <Divider sx={{ my: 1 }} /> */}
-        {/* <ListItemButton onClick={handleDisconnect}>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Déconnecter" />
-          </ListItemButton> */}
-        {/* {drawerMenuSecondaryList} */}
+        <MainListItems isDrawerOpen={open} />
       </Drawer>
+
+      {/* Main content area */}
       <Box
         component="main"
         sx={{
@@ -205,22 +247,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               ? theme.palette.grey[100]
               : theme.palette.grey[900],
           flexGrow: 1,
-          height: "100vh",
-          overflow: "auto",
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
         }}
       >
+        {/* Push content below AppBar */}
         <Toolbar />
-        {/* main container dans laquelle il faut inclure les elements dans le dashboard */}
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+
+        {/* Page content */}
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
           <Grid container spacing={3}>
-            {/* centralOne avec l'ensemble des applications */}
             {children}
           </Grid>
-
-          {/* <Footer /> */}
         </Container>
+
+        {/* Footer */}
+        <Footer />
       </Box>
     </Box>
   );
 };
+
 export default Layout;

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../Layout";
-import { Box, Button, Grid, TextField } from "@mui/material";
+import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import axios from "axios";
 
 interface PersonalInfoProps {
@@ -38,17 +37,25 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
   useEffect(() => {
     const fetchEmployee = async () => {
-      if (id) {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_BASE}/api/hr/employee/${id}`
-          );
-          setPersonalInfo(response.data);
-          console.log(response.data);
-        } catch (error) {
-          console.error("Error fetching employee data:", error);
-          onSnackbarOpen("Failed to load employee data.", "error");
-        }
+      if (!id) return;
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE}/api/hr/employee/${id}`
+        );
+
+        setPersonalInfo({
+          fullName: response.data.fullName || "",
+          email: response.data.email || "",
+          phone: response.data.phone || "",
+          address: response.data.address || "",
+          dob: response.data.dob || "",
+          emergencyContacts: response.data.emergencyContacts || "",
+          socialSecurityNumber: response.data.socialSecurityNumber || "",
+        });
+      } catch (error) {
+        console.error("Error fetching employee data:", error);
+        onSnackbarOpen("Failed to load employee data.", "error");
       }
     };
 
@@ -59,7 +66,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setPersonalInfo({ ...personalInfo, [name]: value });
+    setPersonalInfo((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -77,14 +84,13 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           );
 
       onSnackbarOpen("Personal information submitted successfully!", "success");
-      console.log(response);
 
-      // Notify parent component of successful submission
+      // Notify parent component of successful submission (used by Stepper)
       if (onSubmitSuccess) {
         onSubmitSuccess();
       }
 
-      // Clear the form fields if needed
+      // For a create, clear form and expose new ID upward
       if (!id) {
         setPersonalInfo({
           fullName: "",
@@ -95,19 +101,29 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
           emergencyContacts: "",
           socialSecurityNumber: "",
         });
-        setNewID(response.data.employee.id);
-        console.log(response.data.employee.id);
+
+        const newEmployeeId = (response as any)?.data?.employee?.id;
+        if (newEmployeeId && setNewID) {
+          setNewID(newEmployeeId);
+          console.log("New employee ID:", newEmployeeId);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("There was an error submitting the form!", error);
-      onSnackbarOpen(error.response?.data || "Submission failed", "error");
+      const msg = error?.response?.data || "Submission failed";
+      onSnackbarOpen(msg, "error");
     }
   };
 
   return (
     <Box sx={{ width: "100%" }}>
+      {/* Optional small heading inside the step */}
+      <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
+        Personal information
+      </Typography>
+
       <form onSubmit={handleSubmit}>
-        <Grid container spacing={2} sx={{ pt: 2 }}>
+        <Grid container spacing={2} sx={{ pt: 1 }}>
           <Grid item xs={12} sm={4}>
             <TextField
               label="Full Name"
@@ -116,8 +132,10 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               onChange={handlePersonalInfoChange}
               fullWidth
               required
+              size="small"
             />
           </Grid>
+
           <Grid item xs={12} sm={4}>
             <TextField
               label="Email"
@@ -127,8 +145,10 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               onChange={handlePersonalInfoChange}
               fullWidth
               required
+              size="small"
             />
           </Grid>
+
           <Grid item xs={12} sm={4}>
             <TextField
               label="Phone"
@@ -138,8 +158,10 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               onChange={handlePersonalInfoChange}
               fullWidth
               required
+              size="small"
             />
           </Grid>
+
           <Grid item xs={12} sm={8}>
             <TextField
               label="Address"
@@ -148,8 +170,10 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               onChange={handlePersonalInfoChange}
               fullWidth
               required
+              size="small"
             />
           </Grid>
+
           <Grid item xs={12} sm={4}>
             <TextField
               label="Date of Birth"
@@ -158,22 +182,27 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               value={personalInfo.dob}
               onChange={handlePersonalInfoChange}
               fullWidth
-              InputLabelProps={{ shrink: true }}
               required
+              size="small"
+              InputLabelProps={{ shrink: true }}
             />
           </Grid>
+
           <Grid item xs={12} sm={8}>
             <TextField
               label="Emergency Contacts"
               name="emergencyContacts"
               multiline
-              rows={4}
+              rows={3}
               value={personalInfo.emergencyContacts}
               onChange={handlePersonalInfoChange}
               fullWidth
               required
+              size="small"
+              placeholder="Name, relationship, phone…"
             />
           </Grid>
+
           <Grid item xs={12} sm={4}>
             <TextField
               label="Social Security Number"
@@ -182,19 +211,22 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
               onChange={handlePersonalInfoChange}
               fullWidth
               required
+              size="small"
             />
           </Grid>
         </Grid>
-        <Grid item xs={12}>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            style={{ marginTop: "16px" }}
-          >
-            Submit
+
+        <Box
+          sx={{
+            mt: 3,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button variant="contained" color="primary" type="submit">
+            Save & Continue
           </Button>
-        </Grid>
+        </Box>
       </form>
     </Box>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Container,
   Button,
   Dialog,
   DialogActions,
@@ -9,13 +8,15 @@ import {
   TextField,
   IconButton,
   Box,
+  Paper,
+  Stack,
+  Typography,
 } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { v4 as uuidv4 } from "uuid"; // Import uuid for unique id generation
+import { v4 as uuidv4 } from "uuid";
 
-// Define types for the Update data structure
 interface Update {
   id: string;
   text: string;
@@ -31,7 +32,7 @@ interface UpdateMessages {
 
 interface UpdateProps {
   setUpdateMessages: React.Dispatch<React.SetStateAction<UpdateMessages>>;
-  updateMessages: UpdateMessages; // Pass the current update messages to the component
+  updateMessages: UpdateMessages;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -40,13 +41,10 @@ const Update: React.FC<UpdateProps> = ({
   updateMessages,
   onChange,
 }) => {
-  // console.log(updateMessages);
-  // console.log(setUpdateMessages);
   const [open, setOpen] = useState(false);
   const [updateText, setUpdateText] = useState("");
   const [selectedUpdateId, setSelectedUpdateId] = useState<string | null>(null);
 
-  // Handle opening and closing the dialog
   const handleClickOpen = (update?: Update) => {
     if (update) {
       setSelectedUpdateId(update.id);
@@ -62,19 +60,17 @@ const Update: React.FC<UpdateProps> = ({
     setOpen(false);
   };
 
-  // Handle adding or updating an update
   const handleSubmit = () => {
     if (updateText.trim() === "") return;
 
     const newUpdate: Update = {
-      id: uuidv4(), // Use uuidv4 to generate a unique ID
+      id: uuidv4(),
       text: updateText,
       updateNumber: updateMessages.updates.length + 1,
       date: new Date().toISOString(),
     };
 
     if (selectedUpdateId) {
-      // Update the existing update
       const updatedUpdates = updateMessages.updates.map((update) =>
         update.id === selectedUpdateId
           ? { ...update, text: updateText }
@@ -82,27 +78,24 @@ const Update: React.FC<UpdateProps> = ({
       );
       setUpdateMessages({ ...updateMessages, updates: updatedUpdates });
     } else {
-      // Add a new update
       setUpdateMessages({
         ...updateMessages,
         updates: [...updateMessages.updates, newUpdate],
       });
     }
 
-    // Reset fields and close the dialog
     setUpdateText("");
     setSelectedUpdateId(null);
     setOpen(false);
   };
 
-  // Handle deleting an update
   const handleDelete = (id: string) => {
     const updatedUpdates = updateMessages.updates.filter(
       (update) => update.id !== id
     );
     const reorderedUpdates = updatedUpdates.map((update, index) => ({
       ...update,
-      updateNumber: index + 1, // Reassign the updateNumber based on the new index
+      updateNumber: index + 1,
     }));
     setUpdateMessages({
       ...updateMessages,
@@ -110,43 +103,64 @@ const Update: React.FC<UpdateProps> = ({
     });
   };
 
-  // Define columns for the DataGrid
   const columns: GridColDef[] = [
     {
       field: "updateNumber",
       headerName: "Update #",
-      width: 150,
+      width: 110,
     },
     {
       field: "text",
       headerName: "Text",
-      width: 500,
+      flex: 1,
+      minWidth: 300,
     },
     {
       field: "date",
       headerName: "Date",
       width: 200,
+      valueFormatter: (params) => {
+        const d = new Date(params.value as string);
+        return isNaN(d.getTime())
+          ? ""
+          : d.toLocaleString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+      },
     },
     {
       field: "edit",
       headerName: "Edit",
-      width: 90,
+      width: 80,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => (
-        <IconButton color="primary" onClick={() => handleClickOpen(params.row)}>
-          <EditIcon />
+        <IconButton
+          color="primary"
+          size="small"
+          onClick={() => handleClickOpen(params.row as Update)}
+        >
+          <EditIcon fontSize="small" />
         </IconButton>
       ),
     },
     {
       field: "delete",
       headerName: "Delete",
-      width: 90,
+      width: 80,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => (
         <IconButton
           color="error"
+          size="small"
           onClick={() => handleDelete(params.id as string)}
         >
-          <DeleteIcon />
+          <DeleteIcon fontSize="small" />
         </IconButton>
       ),
     },
@@ -154,47 +168,64 @@ const Update: React.FC<UpdateProps> = ({
 
   return (
     <Box sx={{ width: "100%" }}>
-      {/* Update Title */}
-      <TextField
-        label="Enter update information (update title)"
-        fullWidth
-        variant="outlined"
-        margin="normal"
-        value={updateMessages.updatesTitle}
-        onChange={onChange}
-      />
+      <Stack spacing={2}>
+        {/* Title / meta section */}
+        <Box>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+            Updates
+          </Typography>
+          <TextField
+            label="Update title"
+            placeholder="Enter update information (update title)"
+            fullWidth
+            variant="outlined"
+            size="small"
+            value={updateMessages.updatesTitle}
+            onChange={onChange}
+          />
+        </Box>
 
-      {/* DataGrid to display updates */}
-      <div style={{ height: 400, width: "100%" }}>
-        <DataGrid
-          rows={updateMessages.updates}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
-          disableSelectionOnClick
-        />
-      </div>
+        {/* Table card */}
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 2,
+            borderRadius: 2,
+          }}
+        >
+          <Box sx={{ height: 350, width: "100%" }}>
+            <DataGrid
+              rows={updateMessages.updates}
+              columns={columns}
+              pageSizeOptions={[5, 10]}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 5, page: 0 } },
+              }}
+              disableRowSelectionOnClick
+              density="compact"
+            />
+          </Box>
 
-      {/* Button to open the dialog for adding a new update */}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => handleClickOpen()}
-      >
-        Add Update
-      </Button>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mt: 2,
+            }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleClickOpen()}
+            >
+              Add Update
+            </Button>
+          </Box>
+        </Paper>
+      </Stack>
 
-      {/* Dialog to add or edit an update */}
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        sx={{
-          "& .MuiDialog-paper": {
-            width: "500px",
-            maxWidth: "90%",
-          },
-        }}
-      >
+      {/* Dialog for add / edit */}
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>
           {selectedUpdateId ? "Edit Update" : "Add New Update"}
         </DialogTitle>
@@ -211,11 +242,11 @@ const Update: React.FC<UpdateProps> = ({
             variant="outlined"
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={handleClose} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="primary">
+          <Button onClick={handleSubmit} color="primary" variant="contained">
             {selectedUpdateId ? "Update" : "Submit"}
           </Button>
         </DialogActions>

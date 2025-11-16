@@ -1,16 +1,23 @@
+// src/components/Tickets.tsx
+
 import React, { useState, useEffect } from "react";
 import {
+  Box,
   Container,
   Paper,
   Typography,
   CircularProgress,
   Snackbar,
   Alert,
+  Stack,
+  Divider,
+  Chip,
+  Button,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Layout from "../Layout";
-import { DataGrid, GridColDef, GridRowModel } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 // Define the type for a ticket
 interface Ticket {
@@ -24,11 +31,13 @@ const Tickets: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
+
   const navigate = useNavigate();
 
   // Fetch tickets from the API
@@ -39,7 +48,7 @@ const Tickets: React.FC = () => {
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE}/api/process/tickets`
         );
-        setTickets(response.data);
+        setTickets(response.data || []);
       } catch (err) {
         setError("Failed to fetch tickets");
         setSnackbarMessage("Failed to load tickets.");
@@ -66,39 +75,53 @@ const Tickets: React.FC = () => {
     {
       field: "title",
       headerName: "Title",
-      width: 200,
-      editable: true,
+      flex: 1,
+      minWidth: 180,
     },
     {
       field: "description",
       headerName: "Description",
-      width: 300,
-      editable: true,
+      flex: 2,
+      minWidth: 280,
     },
     {
       field: "status",
       headerName: "Status",
-      width: 150,
-      editable: true,
+      flex: 0.6,
+      minWidth: 130,
+      renderCell: (params) => {
+        const status = String(params.value || "").toLowerCase();
+        let color: "default" | "success" | "warning" | "error" = "default";
+
+        if (status === "pending") color = "warning";
+        else if (status === "closed") color = "success";
+        else if (status === "paused" || status === "cancel") color = "error";
+
+        return (
+          <Chip
+            label={params.value || "Unknown"}
+            color={color === "default" ? undefined : color}
+            size="small"
+            variant={color === "default" ? "outlined" : "filled"}
+          />
+        );
+      },
     },
     {
       field: "actions",
       headerName: "Actions",
-      width: 180,
+      flex: 0.6,
+      minWidth: 150,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => (
-        <button
+        <Button
+          variant="contained"
+          size="small"
           onClick={() => handleEditClick(params.row.id)}
-          style={{
-            padding: "5px 15px",
-            backgroundColor: "#3f51b5",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
         >
           Edit
-        </button>
+        </Button>
       ),
     },
   ];
@@ -113,44 +136,107 @@ const Tickets: React.FC = () => {
 
   return (
     <Layout>
-      <Container component="main" maxWidth="lg">
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h5" align="center" gutterBottom>
-            Ticket List
-          </Typography>
-          {loading ? (
-            <CircularProgress />
-          ) : error ? (
-            <Typography color="error" align="center">
-              {error}
-            </Typography>
-          ) : (
-            <div style={{ height: 400, width: "100%" }}>
-              <DataGrid
-                rows={rows}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableSelectionOnClick
-              />
-            </div>
-          )}
-        </Paper>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          py: { xs: 4, md: 6 },
+          px: { xs: 2, md: 4 },
+          bgcolor: (theme) =>
+            theme.palette.mode === "light"
+              ? "grey.100"
+              : theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Stack spacing={3}>
+            {/* Header */}
+            <Box>
+              <Typography variant="h4" fontWeight={600} gutterBottom>
+                Tickets
+              </Typography>
+              <Typography variant="subtitle1" color="text.secondary">
+                Browse and edit tickets created from your templates.
+              </Typography>
+            </Box>
 
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-        >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-            sx={{ width: "100%" }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-      </Container>
+            {/* Main card */}
+            <Paper
+              elevation={4}
+              sx={{
+                p: { xs: 3, md: 4 },
+                borderRadius: 3,
+                backgroundColor: "background.paper",
+              }}
+            >
+              <Divider textAlign="left" sx={{ mb: 3 }}>
+                <Chip label="Ticket List" color="primary" variant="outlined" />
+              </Divider>
+
+              {loading ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 200,
+                  }}
+                >
+                  <CircularProgress />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    Loading tickets...
+                  </Typography>
+                </Box>
+              ) : error ? (
+                <Typography color="error" align="center">
+                  {error}
+                </Typography>
+              ) : tickets.length === 0 ? (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                >
+                  No tickets found. Create a new ticket to get started.
+                </Typography>
+              ) : (
+                <Box sx={{ height: 500, width: "100%" }}>
+                  <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    pageSizeOptions={[5, 10, 25]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { pageSize: 10, page: 0 },
+                      },
+                    }}
+                    disableRowSelectionOnClick
+                  />
+                </Box>
+              )}
+            </Paper>
+
+            {/* Snackbar */}
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
+              onClose={handleSnackbarClose}
+            >
+              <Alert
+                onClose={handleSnackbarClose}
+                severity={snackbarSeverity}
+                sx={{ width: "100%" }}
+              >
+                {snackbarMessage}
+              </Alert>
+            </Snackbar>
+          </Stack>
+        </Container>
+      </Box>
     </Layout>
   );
 };

@@ -4,7 +4,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import * as React from "react";
 import "./App.css";
 import AppRoutes from "./AppRoutes";
-import { LayoutProvider } from "./apps/admin/LayoutProvider";
+import { LayoutProvider } from "./apps/admin/LayoutContext";
+
 import "./i18n";
 
 function App() {
