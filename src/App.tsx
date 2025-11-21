@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import * as React from "react";
 import "./App.css";
 import AppRoutes from "./AppRoutes";
-import { LayoutProvider } from "./apps/admin/LayoutContext";
+import { AuthProvider, LayoutProvider } from "./context/LayoutContext";
 
 import "./i18n";
 
@@ -17,9 +17,11 @@ function App() {
   return (
     <ThemeProvider theme={showCustomTheme ? LPtheme : defaultTheme}>
       <CssBaseline />
-      <LayoutProvider>
-        <AppRoutes />
-      </LayoutProvider>
+      <AuthProvider>
+        <LayoutProvider>
+          <AppRoutes />
+        </LayoutProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

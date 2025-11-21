@@ -53,7 +53,7 @@ import TaksCalendar from "./apps/admin/tasks/TaksCalendar";
 import TaskTimeline from "./apps/admin/tasks/TaskTimeline";
 import EmployeeForm from "./apps/admin/employees/EmployeeForm";
 import EmployeesList from "./apps/admin/employees/EmployeesList";
-import EmployeeFormNew from "./apps/admin/employees/EmployeeFormNew";
+import EmployeeFormNew from "./apps/admin/employees/EmployeeFormNew_not_used";
 import EmployeeFormTest from "./apps/admin/test/EmployeeFormTest";
 import EditEmployee from "./apps/admin/employees/EditEmployee";
 import JobPositionList from "./apps/admin/employees/JobPositionList";
@@ -72,6 +72,12 @@ import TicketsByTemp from "./apps/admin/tickets/TicketsByTemp";
 import Tickets from "./apps/admin/tickets/Tickets";
 import EditTicket from "./apps/admin/tickets/EditTicket";
 import CreateTicket from "./apps/admin/tickets/CreateTicket";
+import { CustomersPage } from "./apps/admin/pages/CustomersPage";
+import { UsersPage } from "./apps/admin/pages/UsersPage";
+import { RolesPage } from "./apps/admin/pages/RolesPage";
+import { PermissionsPage } from "./apps/admin/pages/PermissionsPage";
+import { AssignUserRolePage } from "./apps/admin/pages/AssignUserRolePage";
+import { LoginPage } from "./apps/admin/pages/LoginPage";
 
 const AppRoutes: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -255,6 +261,13 @@ const AppRoutes: React.FC = () => {
           <Route path="test-file-ExcelDataGrid" element={<ExcelDataGrid />} />
           <Route path="email-editor" element={<EmailEditor />} />
           <Route path="email-retrieve-emails" element={<RetrieveEmails />} />
+          {/* IAM */}
+          <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/roles" element={<RolesPage />} />
+          <Route path="/permissions" element={<PermissionsPage />} />
+          <Route path="/assign-role" element={<AssignUserRolePage />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </BrowserRouter>
     </>

@@ -30,7 +30,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Tooltip from "@mui/material/Tooltip";
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLayoutContext } from "./LayoutContext";
+import { useLayoutContext } from "../../context/LayoutContext";
+import SecurityIcon from "@mui/icons-material/Security";
 
 interface MainListItemsProps {
   isDrawerOpen: boolean;
@@ -47,6 +48,7 @@ const MainListItems: React.FC<MainListItemsProps> = ({ isDrawerOpen }) => {
     isTaskOpen,
     isSiteOpen,
     isElementOpen,
+    isIamOpen,
   } = useLayoutContext();
 
   const handleDisconnect = () => {
@@ -76,15 +78,78 @@ const MainListItems: React.FC<MainListItemsProps> = ({ isDrawerOpen }) => {
             </ListItemButton>
           </Tooltip>
 
-          {/* Test */}
-          <Tooltip {...tooltipProps("Test")}>
-            <ListItemButton component={Link} to="/admin/projects/task/test">
+          {/* IAM */}
+          <Tooltip {...tooltipProps("IAM")}>
+            <ListItemButton onClick={() => openMenuExclusive("iam")}>
               <ListItemIcon>
-                <DescriptionIcon />
+                <SecurityIcon />
               </ListItemIcon>
-              <ListItemText primary="Test" />
+              <ListItemText primary="IAM" />
+              {isIamOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </ListItemButton>
           </Tooltip>
+
+          <Collapse in={isIamOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {/* Customers */}
+              <Tooltip {...tooltipProps("Customers")}>
+                <ListItemButton component={Link} to="/customers" sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <PeopleAltIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Customers" />
+                </ListItemButton>
+              </Tooltip>
+
+              {/* Users */}
+              <Tooltip {...tooltipProps("Users")}>
+                <ListItemButton component={Link} to="/users" sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <ManageAccountsIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Users" />
+                </ListItemButton>
+              </Tooltip>
+
+              {/* Roles */}
+              <Tooltip {...tooltipProps("Roles")}>
+                <ListItemButton component={Link} to="/roles" sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <AssignmentTurnedInIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Roles" />
+                </ListItemButton>
+              </Tooltip>
+
+              {/* Permissions */}
+              <Tooltip {...tooltipProps("Permissions")}>
+                <ListItemButton
+                  component={Link}
+                  to="/permissions"
+                  sx={{ pl: 4 }}
+                >
+                  <ListItemIcon>
+                    <DescriptionIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Permissions" />
+                </ListItemButton>
+              </Tooltip>
+
+              {/* Assign Role */}
+              <Tooltip {...tooltipProps("Assign Role")}>
+                <ListItemButton
+                  component={Link}
+                  to="/assign-role"
+                  sx={{ pl: 4 }}
+                >
+                  <ListItemIcon>
+                    <PersonAddIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Assign Role" />
+                </ListItemButton>
+              </Tooltip>
+            </List>
+          </Collapse>
 
           {/* Comptes */}
           <Tooltip {...tooltipProps("Comptes")}>
