@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const httpClient = axios.create({
-  baseURL: "http://localhost:8080", // change to your backend URL
+  baseURL: import.meta.env.VITE_API_URL, // change to your backend URL
 });
 
 httpClient.interceptors.request.use((config) => {
