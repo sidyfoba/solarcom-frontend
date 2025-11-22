@@ -55,7 +55,7 @@ const SitesList = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/site/template/all`
         );
         setTemplates(response.data.datas || []);
@@ -88,7 +88,7 @@ const SitesList = () => {
         // Get template definition
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/site/template/${selectedTemplate}`
         );
         const siteData = response.data;
@@ -142,7 +142,7 @@ const SitesList = () => {
         // Fetch sites for this template
         const sitesResponse = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/infrastructure/site/all/${selectedTemplate}`
         );
         const sites = sitesResponse.data || [];
@@ -182,7 +182,7 @@ const SitesList = () => {
     try {
       await axios.delete(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/site/${siteToDelete}`
       );
       setSnackbarMessage("Element deleted successfully.");

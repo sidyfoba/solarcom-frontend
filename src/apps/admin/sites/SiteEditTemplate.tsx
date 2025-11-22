@@ -79,7 +79,7 @@ const SiteEditTemplate = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/site/template/${id}`
         );
         const { templateName, fields, description, active } = response.data;
@@ -188,7 +188,7 @@ const SiteEditTemplate = () => {
     try {
       await axios.put(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/infrastructure/site/template/update/${id}`,
         {
           templateName,

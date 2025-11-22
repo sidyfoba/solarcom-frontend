@@ -89,7 +89,7 @@ const TaskEditForm: React.FC = () => {
     const fetchTask = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/tasks/${id}`
+          `${import.meta.env.VITE_API_URL}/api/tasks/${id}`
         );
         const task = response.data;
         setFormState({
@@ -179,7 +179,7 @@ const TaskEditForm: React.FC = () => {
       };
 
       await axios.put(
-        `${import.meta.env.VITE_API_BASE}/api/tasks/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/tasks/${id}`,
         payload
       );
       setSnackbarMessage("Task updated successfully!");

@@ -61,7 +61,7 @@ const TaskList: React.FC = () => {
     const fetchTasks = async () => {
       try {
         const response = await axios.get<Task[]>(
-          `${import.meta.env.VITE_API_BASE}/api/tasks`
+          `${import.meta.env.VITE_API_URL}/api/tasks`
         );
         setTasks(response.data);
         setFilteredTasks(response.data);
@@ -106,7 +106,7 @@ const TaskList: React.FC = () => {
 
   const handleDeleteClick = async (id: string) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE}/api/tasks/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/tasks/${id}`);
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
       setSnackbarMessage("Task deleted successfully");
       setSnackbarSeverity("success");

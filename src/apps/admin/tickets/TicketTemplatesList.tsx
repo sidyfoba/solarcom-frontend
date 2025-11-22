@@ -47,7 +47,7 @@ const TicketTemplatesList = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/process/ticket/template/all`
         );
         // API returns `templates` for tickets
@@ -79,7 +79,7 @@ const TicketTemplatesList = () => {
     try {
       await axios.delete(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/process/touble-ticket/template/delete/${templateToDelete}`
       );
       const temps = templates.filter(

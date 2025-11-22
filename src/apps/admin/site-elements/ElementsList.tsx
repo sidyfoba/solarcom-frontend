@@ -56,7 +56,7 @@ const ElementsList = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/element/template/all`
         );
         setTemplates(response.data || []);
@@ -86,7 +86,7 @@ const ElementsList = () => {
         // Get template metadata to build dynamic columns
         const templateResponse = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/element/template/${selectedTemplate}`
         );
         const templateData = templateResponse.data;
@@ -142,7 +142,7 @@ const ElementsList = () => {
         // Fetch elements for that template
         const elementsResponse = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/infrastructure/element/all/${selectedTemplate}`
         );
         const elements = elementsResponse.data || [];
@@ -177,7 +177,7 @@ const ElementsList = () => {
     try {
       await axios.delete(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/element/${elementToDelete}`
       );
       setSnackbarMessage("Element deleted successfully.");

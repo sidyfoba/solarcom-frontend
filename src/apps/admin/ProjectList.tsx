@@ -44,7 +44,7 @@ const ProjectList: React.FC = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_BASE}/api/projects/all`
+          `${import.meta.env.VITE_API_URL}/api/projects/all`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch projects.");

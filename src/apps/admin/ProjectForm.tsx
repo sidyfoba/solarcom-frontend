@@ -74,7 +74,7 @@ const ProjectForm: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE}/api/projects/create`,
+        `${import.meta.env.VITE_API_URL}/api/projects/create`,
         {
           method: "POST",
           headers: {

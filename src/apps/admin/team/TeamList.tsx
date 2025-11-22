@@ -73,7 +73,7 @@ const TeamList: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/hr/teams`
+          `${import.meta.env.VITE_API_URL}/api/hr/teams`
         );
         setTeams(response.data || []);
         console.log(response.data);
@@ -91,7 +91,7 @@ const TeamList: React.FC = () => {
     const fetchEmployees = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/hr/employee/all`
+          `${import.meta.env.VITE_API_URL}/api/hr/employee/all`
         );
         setEmployees(response.data || []);
       } catch (err) {
@@ -174,7 +174,7 @@ const TeamList: React.FC = () => {
       if (editMode) {
         const id = currentTeam.id;
         await axios.put(
-          `${import.meta.env.VITE_API_BASE}/api/hr/teams/${id}`,
+          `${import.meta.env.VITE_API_URL}/api/hr/teams/${id}`,
           currentTeam
         );
         setTeams((prev) =>
@@ -192,7 +192,7 @@ const TeamList: React.FC = () => {
           memberIDs: currentTeam.memberIDs,
         };
         const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE}/api/hr/teams`,
+          `${import.meta.env.VITE_API_URL}/api/hr/teams`,
           newTeam
         );
         setTeams((prev) => [...prev, response.data]);
@@ -229,7 +229,7 @@ const TeamList: React.FC = () => {
   const handleDeleteTeam = async () => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE}/api/hr/teams/${teamToDelete}`
+        `${import.meta.env.VITE_API_URL}/api/hr/teams/${teamToDelete}`
       );
       setTeams((prev) => prev.filter((team) => team.id !== teamToDelete));
       setSnackbarMessage("Team deleted successfully!");

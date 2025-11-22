@@ -77,7 +77,7 @@ const JobPositionList: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE}/api/hr/job-positions`
+        `${import.meta.env.VITE_API_URL}/api/hr/job-positions`
       );
       setJobPositions(response.data || []);
       setFilteredJobPositions(response.data || []);
@@ -119,14 +119,14 @@ const JobPositionList: React.FC = () => {
 
       if (currentJobPosition.id) {
         await axios.put(
-          `${import.meta.env.VITE_API_BASE}/api/hr/job-positions/${
+          `${import.meta.env.VITE_API_URL}/api/hr/job-positions/${
             currentJobPosition.id
           }`,
           currentJobPosition
         );
       } else {
         await axios.post(
-          `${import.meta.env.VITE_API_BASE}/api/hr/job-positions`,
+          `${import.meta.env.VITE_API_URL}/api/hr/job-positions`,
           currentJobPosition
         );
       }
@@ -155,9 +155,7 @@ const JobPositionList: React.FC = () => {
     try {
       setLoading(true);
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE}/api/hr/job-positions/${
-          jobToDelete.id
-        }`
+        `${import.meta.env.VITE_API_URL}/api/hr/job-positions/${jobToDelete.id}`
       );
       await fetchJobPositions();
       setSnackbarMessage("Job position deleted successfully");

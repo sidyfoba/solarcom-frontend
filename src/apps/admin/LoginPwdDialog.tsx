@@ -107,7 +107,7 @@ const LoginPwdDialog: React.FC<LoginPwdDialogProps> = ({
       formDataToSend.append("password", editedUser.password);
       const token = sessionStorage.getItem("jwt");
       await axios.put(
-        `${import.meta.env.VITE_API_BASE}/api/us/userlogin/${editedUser.id}`,
+        `${import.meta.env.VITE_API_URL}/api/us/userlogin/${editedUser.id}`,
         formDataToSend,
         {
           headers: { Authorization: token },

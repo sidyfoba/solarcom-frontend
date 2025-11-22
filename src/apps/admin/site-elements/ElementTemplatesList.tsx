@@ -200,7 +200,7 @@ const ElementTemplatesList = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/element/template/all`
         );
         setTemplates(response.data || []);
@@ -227,7 +227,7 @@ const ElementTemplatesList = () => {
     try {
       await axios.delete(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/infrastructure/element/template/delete/${templateToDelete}`
       );
       setTemplates((prev) =>

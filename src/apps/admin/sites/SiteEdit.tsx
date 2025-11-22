@@ -98,7 +98,7 @@ const SiteEdit = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/infrastructure/site/${id}`
+          `${import.meta.env.VITE_API_URL}/api/infrastructure/site/${id}`
         );
 
         if (response.data.elements) {
@@ -131,7 +131,7 @@ const SiteEdit = () => {
         try {
           const response = await axios.get(
             `${
-              import.meta.env.VITE_API_BASE
+              import.meta.env.VITE_API_URL
             }/api/admin/infrastructure/site/template/${templateId}`
           );
           setTemplateFields(response.data.fields);
@@ -186,7 +186,7 @@ const SiteEdit = () => {
     try {
       await axios.put(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/site/update-from-template`,
         {
           id: site.id,
@@ -219,7 +219,7 @@ const SiteEdit = () => {
     try {
       const response = await axios.get(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/infrastructure/element/template/all`
       );
       setTemplates(response.data);
@@ -238,7 +238,7 @@ const SiteEdit = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/element/template/${selectedTemplate}`
         );
         const siteData = response.data;
@@ -258,7 +258,7 @@ const SiteEdit = () => {
 
         const elementsResponse = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/infrastructure/element/all/current-id-site-is-null/${selectedTemplate}`
         );
         const els = elementsResponse.data;
@@ -289,7 +289,7 @@ const SiteEdit = () => {
     try {
       const response = await axios.get(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/element/${selectedElementId}`
       );
       const newTemplate = response.data.elementTemplate;

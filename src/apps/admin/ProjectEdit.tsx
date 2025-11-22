@@ -61,7 +61,7 @@ const ProjectEdit: React.FC = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_BASE}/api/projects/${id}`
+          `${import.meta.env.VITE_API_URL}/api/projects/${id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch project.");
@@ -128,7 +128,7 @@ const ProjectEdit: React.FC = () => {
     try {
       setSaving(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE}/api/projects/update/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/projects/update/${id}`,
         {
           method: "PUT",
           headers: {

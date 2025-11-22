@@ -47,7 +47,7 @@ const SiteTemplatesList = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/site/template/all`
         );
         setTemplates(response.data.datas || []);
@@ -78,7 +78,7 @@ const SiteTemplatesList = () => {
     try {
       await axios.delete(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/infrastructure/site/template/delete/${templateToDelete}`
       );
       const temps = templates.filter(

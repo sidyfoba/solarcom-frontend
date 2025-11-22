@@ -43,7 +43,7 @@ const SiteCreate = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/site/template/all`
         );
         setTemplates(response.data.datas || []);
@@ -63,7 +63,7 @@ const SiteCreate = () => {
         try {
           const response = await axios.get(
             `${
-              import.meta.env.VITE_API_BASE
+              import.meta.env.VITE_API_URL
             }/api/admin/infrastructure/site/template/${selectedTemplate}`
           );
           setTemplateFields(response.data.fields || []);
@@ -114,7 +114,7 @@ const SiteCreate = () => {
     try {
       await axios.post(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/site/create-from-template/${selectedTemplate}`,
         { siteName, values: formData }
       );

@@ -270,7 +270,7 @@ const CreateTicket: React.FC = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/process/ticket/template/all`
         );
         setTemplates(response.data.templates || []);
@@ -291,7 +291,7 @@ const CreateTicket: React.FC = () => {
         try {
           const response = await axios.get(
             `${
-              import.meta.env.VITE_API_BASE
+              import.meta.env.VITE_API_URL
             }/api/admin/process/ticket/template/${selectedTemplate}`
           );
           setTemplateFields(response.data.fields || []);
@@ -472,7 +472,7 @@ const CreateTicket: React.FC = () => {
     try {
       await axios.post(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/process/tickets/create-from-template/${selectedTemplate}`,
         { ticket: newTicket, updateMessages, assignmentsList: assignmentsList }
       );

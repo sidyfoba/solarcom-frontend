@@ -198,7 +198,7 @@ const ElementCreate = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/element/template/all`
         );
         setTemplates(response.data || []);
@@ -223,7 +223,7 @@ const ElementCreate = () => {
         try {
           const response = await axios.get(
             `${
-              import.meta.env.VITE_API_BASE
+              import.meta.env.VITE_API_URL
             }/api/admin/infrastructure/element/template/${selectedTemplate}`
           );
           setTemplateFields(response.data.fields || []);
@@ -280,7 +280,7 @@ const ElementCreate = () => {
     try {
       await axios.post(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/element/create-from-template/${selectedTemplate}`,
         { elementName, values: formData }
       );

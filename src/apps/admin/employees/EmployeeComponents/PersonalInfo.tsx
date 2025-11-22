@@ -41,7 +41,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
 
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/hr/employee/${id}`
+          `${import.meta.env.VITE_API_URL}/api/hr/employee/${id}`
         );
 
         setPersonalInfo({
@@ -75,11 +75,11 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
     try {
       const response = id
         ? await axios.put(
-            `${import.meta.env.VITE_API_BASE}/api/hr/employee/${id}`,
+            `${import.meta.env.VITE_API_URL}/api/hr/employee/${id}`,
             personalInfo
           )
         : await axios.post(
-            `${import.meta.env.VITE_API_BASE}/api/hr/employee/personal-info`,
+            `${import.meta.env.VITE_API_URL}/api/hr/employee/personal-info`,
             personalInfo
           );
 

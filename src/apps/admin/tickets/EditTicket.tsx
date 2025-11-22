@@ -212,7 +212,7 @@ const EditTicket: React.FC = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/process/ticket/template/all`
         );
         setTemplates(response.data.templates);
@@ -233,7 +233,7 @@ const EditTicket: React.FC = () => {
       setFieldsLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/process/tickets/${id}`
+          `${import.meta.env.VITE_API_URL}/api/process/tickets/${id}`
         );
         const ticketData: Ticket = response.data;
         setTicketTitle(ticketData.title);
@@ -258,7 +258,7 @@ const EditTicket: React.FC = () => {
       if (!ticket?.updateMessagesId) return;
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/process/update/messages/${
+          `${import.meta.env.VITE_API_URL}/api/process/update/messages/${
             ticket.updateMessagesId
           }/updates`
         );
@@ -278,7 +278,7 @@ const EditTicket: React.FC = () => {
       if (!ticket?.assignmentListId) return;
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/process/assignments-list/${
+          `${import.meta.env.VITE_API_URL}/api/process/assignments-list/${
             ticket.assignmentListId
           }/assignments`
         );
@@ -480,7 +480,7 @@ const EditTicket: React.FC = () => {
       }
 
       await axios.put(
-        `${import.meta.env.VITE_API_BASE}/api/process/tickets/update/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/process/tickets/update/${id}`,
         requestData
       );
 

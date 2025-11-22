@@ -201,7 +201,7 @@ const ElementEdit = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/infrastructure/element/${id}`
+          `${import.meta.env.VITE_API_URL}/api/infrastructure/element/${id}`
         );
         const data = response.data;
         setElement(data);
@@ -226,7 +226,7 @@ const ElementEdit = () => {
         try {
           const response = await axios.get(
             `${
-              import.meta.env.VITE_API_BASE
+              import.meta.env.VITE_API_URL
             }/api/admin/infrastructure/element/template/${templateId}`
           );
           setTemplateFields(response.data.fields || []);
@@ -293,7 +293,7 @@ const ElementEdit = () => {
     try {
       await axios.put(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/infrastructure/element/update-from-template`,
         {
           id: element.id,

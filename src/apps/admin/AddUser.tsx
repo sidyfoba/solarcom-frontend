@@ -50,7 +50,7 @@ const AddUser = () => {
   const checkLoginExists = async (loginValue: string) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE}/api/users/check-login`,
+        `${import.meta.env.VITE_API_URL}/api/users/check-login`,
         { params: { login: loginValue } }
       );
       return response.data.exists;
@@ -107,7 +107,7 @@ const AddUser = () => {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE}/api/users/add`,
+        `${import.meta.env.VITE_API_URL}/api/users/add`,
         userData
       );
 

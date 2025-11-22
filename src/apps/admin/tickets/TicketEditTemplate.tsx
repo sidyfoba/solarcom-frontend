@@ -170,7 +170,7 @@ const TicketEditTemplate: FC = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/process/ticket/template/${id}`
         );
         const { templateName, fields, description } = response.data;
@@ -386,7 +386,7 @@ const TicketEditTemplate: FC = () => {
     try {
       await axios.put(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/process/ticket/template/update/${id}`,
         {
           templateName,

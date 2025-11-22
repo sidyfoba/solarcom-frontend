@@ -63,7 +63,7 @@ const Accounts: React.FC<Props> = ({ roles }) => {
     const fetchData = async () => {
       try {
         const response = await axios.get<User[]>(
-          `${import.meta.env.VITE_API_BASE}/api/users`
+          `${import.meta.env.VITE_API_URL}/api/users`
         );
         setRows(response.data);
       } catch (err: any) {

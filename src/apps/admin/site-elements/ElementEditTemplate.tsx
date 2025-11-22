@@ -225,7 +225,7 @@ const ElementEditTemplate = () => {
       try {
         const response = await axios.get(
           `${
-            import.meta.env.VITE_API_BASE
+            import.meta.env.VITE_API_URL
           }/api/admin/infrastructure/element/template/${id}`
         );
         const { templateName, fields, description, active, icon } =
@@ -337,7 +337,7 @@ const ElementEditTemplate = () => {
     try {
       await axios.put(
         `${
-          import.meta.env.VITE_API_BASE
+          import.meta.env.VITE_API_URL
         }/api/admin/infrastructure/element/template/update/${id}`,
         {
           templateName,

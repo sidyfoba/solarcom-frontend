@@ -62,7 +62,7 @@ const EmployeesList: React.FC = () => {
       setLoading(true);
       try {
         const response = await axios.get<Employee[]>(
-          `${import.meta.env.VITE_API_BASE}/api/hr/employee/all`
+          `${import.meta.env.VITE_API_URL}/api/hr/employee/all`
         );
         setEmployees(response.data || []);
       } catch (err) {
@@ -93,7 +93,7 @@ const EmployeesList: React.FC = () => {
 
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE}/api/hr/employee/${employeeToDelete}`
+        `${import.meta.env.VITE_API_URL}/api/hr/employee/${employeeToDelete}`
       );
       setEmployees((prev) => prev.filter((emp) => emp.id !== employeeToDelete));
       setSnackbarMessage("Employee deleted successfully.");

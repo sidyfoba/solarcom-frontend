@@ -29,7 +29,7 @@ const TaskTimeline = () => {
 
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE}/api/tasks`
+          `${import.meta.env.VITE_API_URL}/api/tasks`
         );
         const tasks = response.data || [];
 
